@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIY Series</title>
+  <!-- Se abre desde el disco mientras arranca el servidor (ver main.js) -->
+  <link rel="stylesheet" href="css/splash.css">
+  <style>
+    /* La fuente se declara aquí y no en splash.css: en index.html ya la declara styles.css */
+    @font-face {
+      font-family: 'Outfit';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: block;
+      src: url('fonts/outfit-latin.woff2') format('woff2');
+    }
+    html, body { margin: 0; background: #141414; }
+  </style>
+</head>
+<body>
+  <div class="splash" id="splash"></div>
+  <script src="js/splash.js"></script>
+</body>
+</html>

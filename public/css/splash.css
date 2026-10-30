@@ -1,0 +1,167 @@
+/* ==========================================================================
+   PANTALLA DE CARGA
+   La usan splash.html (mientras arranca el servidor) e index.html (hasta que
+   el catálogo está listo). Las dos dibujan el logo en el mismo sitio, así el
+   paso de una a otra no se nota.
+   ========================================================================== */
+
+.splash {
+  --splash-red: #E50914;
+  --splash-bg: #141414;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  background: var(--splash-bg);
+  overflow: hidden;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: opacity 0.55s ease 0.15s, visibility 0s linear 0.7s;
+}
+
+/* Resplandor rojo detrás del logo */
+.splash::before {
+  content: '';
+  position: absolute;
+  width: 70vmin;
+  height: 70vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(229, 9, 20, 0.22) 0%, rgba(229, 9, 20, 0) 65%);
+  opacity: 0;
+  transform: scale(0.6);
+  animation: splash-glow 1.6s var(--ease-out-expo) 0.2s forwards;
+}
+
+.splash-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 34px;
+  transition: transform 0.7s cubic-bezier(0.7, 0, 0.84, 0), opacity 0.5s ease;
+}
+
+.splash-logo {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: var(--splash-red);
+}
+
+.splash-logo svg {
+  height: 72px;
+  width: auto;
+  fill: var(--splash-red);
+  /* El SVG recorta lo que sale de su caja: las letras "suben" desde una línea invisible */
+  overflow: hidden;
+}
+
+.splash-glyph {
+  transform-box: fill-box;
+  transform: translateY(105%);
+  animation: splash-rise 0.8s var(--ease-out-expo) forwards;
+}
+.splash-glyph:nth-of-type(1) { animation-delay: 0.15s; }
+.splash-glyph:nth-of-type(2) { animation-delay: 0.25s; }
+.splash-glyph:nth-of-type(3) { animation-delay: 0.35s; }
+.splash-glyph:nth-of-type(4) { animation-delay: 0.45s; }
+
+/* Brillo que cruza las letras */
+.splash-shine {
+  transform: translateX(0);
+  animation: splash-shine 0.9s cubic-bezier(0.45, 0, 0.2, 1) 1.05s forwards;
+}
+
+.splash-word {
+  display: flex;
+  font-size: 54px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 2px;
+}
+
+.splash-word span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(-14px);
+  filter: blur(6px);
+  animation: splash-letter 0.6s var(--ease-out-expo) forwards;
+  animation-delay: calc(0.6s + var(--i) * 0.05s);
+}
+
+/* Barra de carga: aparece solo si hay que esperar */
+.splash-bar {
+  position: relative;
+  width: 180px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  opacity: 0;
+  animation: splash-fade-in 0.5s ease 1.5s forwards;
+}
+
+.splash-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--splash-red), transparent);
+  animation: splash-bar 1.3s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+/* Cargando los pósters: la barra se llena con el avance real */
+.splash.has-progress .splash-bar::after {
+  width: 100%;
+  background: var(--splash-red);
+  animation: none;
+  transform: scaleX(var(--p, 0));
+  transform-origin: 0 50%;
+  transition: transform 0.25s ease-out;
+}
+
+/* Viene de splash.html: el logo ya está armado, sin repetir la entrada */
+.splash.is-settled::before { animation: none; opacity: 1; transform: none; }
+.splash.is-settled .splash-glyph,
+.splash.is-settled .splash-word span { animation: none; opacity: 1; transform: none; filter: none; }
+.splash.is-settled .splash-shine { animation: none; transform: translateX(160px); }
+.splash.is-settled .splash-bar { animation: none; opacity: 1; }
+
+/* Salida: el logo se acerca y todo se desvanece */
+.splash.is-leaving { opacity: 0; visibility: hidden; pointer-events: none; }
+.splash.is-leaving .splash-inner { transform: scale(1.18); opacity: 0; }
+.splash.is-leaving .splash-bar { opacity: 0; transition: opacity 0.2s ease; }
+
+@keyframes splash-glow {
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes splash-rise {
+  to { transform: translateY(0); }
+}
+@keyframes splash-shine {
+  to { transform: translateX(160px); }
+}
+@keyframes splash-letter {
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes splash-fade-in {
+  to { opacity: 1; }
+}
+@keyframes splash-bar {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash::before,
+  .splash-glyph,
+  .splash-word span,
+  .splash-shine,
+  .splash-bar { animation: none; opacity: 1; transform: none; filter: none; }
+  .splash-shine { opacity: 0; }
+  .splash-bar::after { animation-duration: 3s; }
+  .splash.is-leaving .splash-inner { transform: none; }
+}

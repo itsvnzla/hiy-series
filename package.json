@@ -1,0 +1,65 @@
+{
+  "name": "hiy-series",
+  "version": "1.0.0",
+  "description": "HIY Series - Plataforma de streaming personal para series locales - App de Escritorio",
+  "main": "main.js",
+  "scripts": {
+    "prestart": "node scripts/prestart.js",
+    "start": "electron .",
+    "electron": "electron .",
+    "build": "electron-builder",
+    "models": "node scripts/download-models.js"
+  },
+  "keywords": [
+    "hiy",
+    "streaming",
+    "series",
+    "nodejs",
+    "electron",
+    "desktop",
+    "video-player"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@huggingface/transformers": "^4.3.1",
+    "express": "^4.19.2",
+    "mime-types": "^2.1.35"
+  },
+  "devDependencies": {
+    "electron": "^42.4.0",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "com.hiy.series",
+    "productName": "HIY Series",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "server.js",
+      "metadata.js",
+      "subtitles.js",
+      "audio.js",
+      "keyframes.js",
+      "public/**/*",
+      "data/**/*",
+      "assets/**/*",
+      "models/**/*",
+      "node_modules/**/*"
+    ],
+    "asarUnpack": [
+      "models/**/*",
+      "node_modules/onnxruntime-node/**/*",
+      "node_modules/onnxruntime-common/**/*",
+      "node_modules/sharp/**/*",
+      "node_modules/@img/**/*"
+    ]
+  }
+}

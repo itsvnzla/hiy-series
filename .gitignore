@@ -1,0 +1,21 @@
+# Dependencias y compilados
+node_modules/
+dist/
+
+# Datos personales del usuario (biblioteca, perfiles, progreso, clave de TMDB, cachés)
+data/
+media/
+
+# Modelos de traducción (≈220 MB): se descargan con "npm run models"
+models/
+
+# Salidas de herramientas
+brag-output/
+graphify-out/
+.impeccable/
+
+# Varios
+.env
+*.log
+Thumbs.db
+desktop.ini

@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIY Series - Streaming Personal (MP4 / MKV / WEBM)</title>
+  <meta name="description" content="HIY Series: plataforma de streaming personal de series desarrollada en Node.js con reproductor local y soporte para MP4, MKV y WEBM.">
+  <!-- La fuente se pide de inmediato: si llega tarde, la palabra "SERIES" de la pantalla
+       de carga desaparece un instante al pasar de splash.html a la app -->
+  <link rel="preload" href="fonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/splash.css">
+  <!-- Idioma (español / inglés): va primero para traducir la página mientras se carga -->
+  <script src="js/i18n.js"></script>
+  <!-- Lucide Icons (copia local: antes se descargaba de unpkg.com en cada arranque y bloqueaba la página) -->
+  <script src="js/vendor/lucide.min.js"></script>
+</head>
+<body>
+
+  <!-- Pantalla de carga: tapa la app hasta que el catálogo está listo (js/splash.js) -->
+  <div class="splash" id="splash"></div>
+  <script src="js/splash.js"></script>
+
+  <!-- Navigation Bar -->
+  <header class="navbar" id="navbar">
+    <div class="nav-left">
+      <a href="#" class="logo">
+        <svg viewBox="0 0 111 30" aria-label="HIY">
+          <path d="M105.062 14.28L111 30H101.46L98.54 22.02H98.34L95.5 30H86L91.94 14.28V0h13.122v14.28zM72.04 0h13.3v30h-13.3V0zm-17.7 13.06h-9.92V0H31.14v30h13.28v-11.4h9.92v11.4h13.28V0H54.34v13.06zM22.5 0H9.22v30H22.5V0zM0 0v30h9.22V0H0z"/>
+        </svg>
+        <span>SERIES</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#" class="active" id="navHome">Inicio</a></li>
+        <li><a href="#" id="navSeries">Series</a></li>
+        <li><a href="#" id="navMyList">Favoritos</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-right">
+      <div class="search-box">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Buscar series, géneros, formatos...">
+      </div>
+
+      <button class="btn-scan" id="openScanBtn" title="Escanear carpeta de videos en tu PC">
+        <i data-lucide="folder-search"></i>
+        <span>Escanear PC</span>
+      </button>
+
+      <!-- Perfil: el avatar abre un menú con "Editar perfil" y "Configuración" -->
+      <div class="profile-menu-wrapper" id="profileMenuWrapper">
+        <button class="user-avatar" id="profileAvatarBtn" type="button" title="Perfil Principal" aria-haspopup="true" aria-expanded="false">
+          <span id="profileAvatarInitial">P</span>
+        </button>
+        <div class="profile-menu" id="profileMenu" role="menu">
+          <div class="profile-menu-head">
+            <span class="user-avatar is-large" id="profileMenuAvatar"><span>P</span></span>
+            <div>
+              <strong id="profileMenuName">Perfil Principal</strong>
+              <small id="profileMenuStats"></small>
+            </div>
+          </div>
+          <!-- Los otros perfiles, para cambiar con un clic (los dibuja app.js) -->
+          <div class="profile-menu-others" id="profileMenuOthers"></div>
+          <button type="button" class="profile-menu-item" role="menuitem" id="profileMenuSwitch">
+            <i data-lucide="users"></i> Cambiar de perfil
+          </button>
+          <button type="button" class="profile-menu-item" role="menuitem" data-settings-tab="profile">
+            <i data-lucide="user-pen"></i> Editar perfil
+          </button>
+          <button type="button" class="profile-menu-item" role="menuitem" data-settings-tab="playback">
+            <i data-lucide="settings"></i> Configuración
+          </button>
+          <button type="button" class="profile-menu-item" role="menuitem" id="profileMenuMyList">
+            <i data-lucide="heart"></i> Favoritos
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="heroSection">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-tags">
+        <span class="hero-match" id="heroMatch">98% Coincidencia</span>
+        <span class="hero-rating" id="heroRating">16+</span>
+        <span class="hero-badge-format" id="heroFormats">MP4 • MKV • WEBM</span>
+      </div>
+      <h1 class="hero-title" id="heroTitle">Cyber Chronicles</h1>
+      <p class="hero-description" id="heroDesc">
+        Cargando sinopsis de la serie destacada...
+      </p>
+      <div class="hero-buttons">
+        <button class="btn-play" id="heroPlayBtn">
+          <i data-lucide="play" style="fill: currentColor;"></i> Reproducir
+        </button>
+        <button class="btn-info" id="heroInfoBtn">
+          <i data-lucide="info"></i> Más Información
+        </button>
+        <button class="btn-mylist" id="heroMyListBtn" type="button"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Categories -->
+  <main class="main-content">
+    
+    <!-- Row: Continuar Viendo -->
+    <section class="category-row" id="rowContinueWatching" style="display: none;">
+      <h2 class="category-title">
+        <i data-lucide="history" style="color: var(--netflix-red);"></i> Continuar Viendo
+      </h2>
+      <div class="row-container">
+        <div class="row-cards" id="cardsContinueWatching"></div>
+      </div>
+    </section>
+
+    <!-- Row: Tendencias Ahora -->
+    <section class="category-row">
+      <h2 class="category-title">
+        Tendencias en Tu Biblioteca <span class="count" id="countTrending"></span>
+      </h2>
+      <div class="row-container">
+        <div class="row-cards" id="cardsTrending"></div>
+      </div>
+    </section>
+
+    <!-- Row: Series Locales (.mp4 / .mkv / .webm) -->
+    <section class="category-row">
+      <h2 class="category-title">
+        <i data-lucide="hard-drive" style="color: #60A5FA;"></i> Series de tu Almacenamiento Local (MP4 / MKV / WEBM)
+      </h2>
+      <div class="row-container">
+        <div class="row-cards" id="cardsLocal"></div>
+      </div>
+    </section>
+
+    <!-- Filas por género (las arma app.js): cada serie sale en una sola de ellas -->
+    <div id="homeGenreRows"></div>
+
+  </main>
+
+  <!-- Vista: Todas las Series -->
+  <section class="series-page" id="seriesPage" hidden>
+    
+    <!-- Hero Billboard Destacado de Series -->
+    <div class="series-billboard" id="seriesBillboard">
+      <div class="series-billboard-backdrop" id="seriesBillboardBackdrop"></div>
+      <div class="series-billboard-vignette"></div>
+      <div class="series-billboard-content">
+        <div class="billboard-badge">
+          <span class="netflix-n-badge">
+            <svg viewBox="0 0 111 30" aria-hidden="true">
+              <path d="M105.062 14.28L111 30H101.46L98.54 22.02H98.34L95.5 30H86L91.94 14.28V0h13.122v14.28zM72.04 0h13.3v30h-13.3V0zm-17.7 13.06h-9.92V0H31.14v30h13.28v-11.4h9.92v11.4h13.28V0H54.34v13.06zM22.5 0H9.22v30H22.5V0zM0 0v30h9.22V0H0z"/>
+            </svg>
+          </span>
+          <span class="badge-type">SERIE</span>
+        </div>
+        <h2 class="series-billboard-title" id="seriesBillboardTitle">Series Hub</h2>
+        <div class="series-billboard-meta">
+          <span class="hero-match" id="seriesBillboardMatch">98% Coincidencia</span>
+          <span class="meta-rating" id="seriesBillboardRating">16+</span>
+          <span class="meta-seasons" id="seriesBillboardSeasons">2 Temporadas</span>
+          <span class="format-badge format-mp4" id="seriesBillboardFormat">ULTRA HD 4K</span>
+        </div>
+        <p class="series-billboard-desc" id="seriesBillboardDesc">
+          Explora la colección completa de series organizadas por géneros, formatos y temporadas.
+        </p>
+        <div class="series-billboard-actions">
+          <button class="btn-play" id="seriesBillboardPlayBtn" title="Reproducir">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            <span>Reproducir</span>
+          </button>
+          <button class="btn-info" id="seriesBillboardInfoBtn" title="Más información">
+            <i data-lucide="info"></i>
+            <span>Más información</span>
+          </button>
+          <button class="btn-mylist" id="seriesBillboardMyListBtn" type="button"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de Control Sticky de Series -->
+    <div class="series-subnav" id="seriesSubnav">
+      <div class="series-subnav-left">
+        <h1 class="series-page-title">Series</h1>
+        
+        <!-- Dropdown de Géneros estilo Netflix -->
+        <div class="genre-dropdown-wrapper" id="genreDropdownWrapper">
+          <button class="genre-dropdown-btn" id="genreDropdownBtn" type="button" aria-haspopup="true" aria-expanded="false">
+            <span id="genreDropdownLabel">Géneros</span>
+            <i data-lucide="chevron-down" class="dropdown-chevron"></i>
+          </button>
+          <div class="genre-dropdown-menu" id="genreDropdownMenu">
+            <div class="genre-dropdown-header">
+              <span>Categorías</span>
+            </div>
+            <div class="genre-dropdown-grid" id="genreDropdownGrid">
+              <!-- Rellenado dinámicamente -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="series-subnav-right">
+        <!-- Switch de modo de vista: Cuadrícula vs Filas -->
+        <div class="view-mode-toggle" id="viewModeToggle">
+          <button class="view-btn active" id="btnViewGrid" title="Vista de cuadrícula" type="button">
+            <i data-lucide="layout-grid"></i>
+          </button>
+          <button class="view-btn" id="btnViewRows" title="Vista de filas por categoría" type="button">
+            <i data-lucide="rows-3"></i>
+          </button>
+        </div>
+
+        <!-- Selector de ordenamiento -->
+        <div class="series-sort-wrap">
+          <span class="series-sort-label">Ordenar:</span>
+          <!-- Menú propio (la lista nativa de Windows no se puede estilizar bien) -->
+          <div class="sort-dropdown" id="sortDropdown">
+            <button class="sort-dropdown-btn" id="sortDropdownBtn" type="button" aria-haspopup="true" aria-expanded="false">
+              <span id="sortDropdownLabel">Sugerencias para ti</span>
+              <i data-lucide="chevron-down" class="dropdown-chevron"></i>
+            </button>
+            <div class="sort-dropdown-menu" id="sortDropdownMenu"></div>
+          </div>
+          <!-- Guarda el valor elegido; está oculto -->
+          <select id="seriesSort" class="season-select series-sort-select" hidden>
+            <option value="default">Sugerencias para ti</option>
+            <option value="az">Nombre (A–Z)</option>
+            <option value="za">Nombre (Z–A)</option>
+            <option value="seasons">Más temporadas</option>
+            <option value="episodes">Más episodios</option>
+            <option value="year">Año de estreno</option>
+          </select>
+        </div>
+
+        <span class="series-page-count" id="seriesPageCount"></span>
+      </div>
+    </div>
+
+    <!-- Vista: Cuadrícula de Series -->
+    <div class="series-grid" id="seriesGrid"></div>
+
+    <!-- Vista: Filas por Género -->
+    <div class="series-rows-container" id="seriesRowsContainer" hidden></div>
+
+    <!-- Estado vacío -->
+    <div class="series-empty" id="seriesEmpty" hidden>
+      <div class="series-empty-icon">
+        <i data-lucide="film"></i>
+      </div>
+      <h2>No se encontraron series</h2>
+      <p id="seriesEmptyText">No hay títulos que coincidan con los filtros seleccionados.</p>
+      <button class="btn-reset-filters" id="btnResetFilters" type="button">
+        Ver todas las series
+      </button>
+    </div>
+  </section>
+
+  <!-- Vista: Favoritos -->
+  <section class="mylist-page" id="myListPage" hidden>
+    <div class="mylist-header">
+      <h1 class="mylist-title">Favoritos</h1>
+      <span class="mylist-count" id="myListCount"></span>
+    </div>
+
+    <div class="series-grid" id="myListGrid"></div>
+
+    <div class="series-empty" id="myListEmpty" hidden>
+      <div class="series-empty-icon mylist-empty-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      </div>
+      <h2>Aún no tienes favoritos</h2>
+      <p>Agrega series con el botón <strong>＋</strong> de cada tarjeta o desde "Favoritos" en la ficha de la serie, y aparecerán aquí.</p>
+      <button class="btn-reset-filters" id="btnExploreSeries" type="button">
+        Explorar series
+      </button>
+    </div>
+  </section>
+
+  <!-- Vista: Resultados de búsqueda (se abre al escribir en el buscador desde el inicio) -->
+  <section class="mylist-page search-page" id="searchPage" hidden>
+    <div class="mylist-header">
+      <h1 class="mylist-title" id="searchTitle">Resultados</h1>
+      <span class="mylist-count" id="searchCount"></span>
+    </div>
+
+    <!-- Mejor resultado, en grande con su banner -->
+    <article class="search-top" id="searchTop" hidden>
+      <div class="search-top-ambient" id="searchTopAmbient"></div>
+      <div class="search-top-bg" id="searchTopBg"></div>
+      <img class="search-top-poster" id="searchTopPoster" alt="">
+      <div class="search-top-info">
+        <span class="search-top-eyebrow">Mejor resultado</span>
+        <h2 class="search-top-title" id="searchTopTitle"></h2>
+        <div class="search-top-meta" id="searchTopMeta"></div>
+        <p class="search-top-desc" id="searchTopDesc"></p>
+        <p class="search-top-credits" id="searchTopCredits"></p>
+        <div class="hero-buttons">
+          <button class="btn-play search-top-play" id="searchTopPlay" type="button"></button>
+          <button class="btn-info" id="searchTopInfo" type="button">
+            <i data-lucide="info"></i> Más información
+          </button>
+          <button class="btn-mylist" id="searchTopMyList" type="button"></button>
+        </div>
+      </div>
+
+    </article>
+
+    <div class="search-section" id="searchMore" hidden>
+      <h3 class="search-section-title">Otros resultados <span id="searchMoreCount"></span></h3>
+      <div class="series-grid" id="searchGrid"></div>
+    </div>
+
+    <!-- Series parecidas (comparten géneros con el mejor resultado) -->
+    <section class="category-row search-related" id="searchRelated" hidden>
+      <h2 class="category-title" id="searchRelatedTitle">Te puede gustar</h2>
+      <div class="row-container">
+        <div class="row-cards" id="searchRelatedCards"></div>
+      </div>
+    </section>
+
+    <div class="series-empty" id="searchEmpty" hidden>
+      <div class="series-empty-icon">
+        <i data-lucide="search-x"></i>
+      </div>
+      <h2 id="searchEmptyTitle">No encontramos nada</h2>
+      <p>Prueba con otro nombre o explora por género:</p>
+      <div class="search-chips is-centered" id="searchEmptyChips"></div>
+    </div>
+  </section>
+
+  <!-- Series Detail Modal -->
+  <div class="modal" id="seriesModal">
+    <div class="modal-content">
+      <button class="btn-close-modal" id="closeSeriesModal">&times;</button>
+      
+      <div class="modal-header-banner" id="modalBanner">
+        <div class="modal-header-info">
+          <h2 class="modal-title" id="modalTitle">Título de la Serie</h2>
+          <div class="hero-buttons">
+            <button class="btn-play" id="modalPlayBtn">
+              <i data-lucide="play" style="fill: currentColor;"></i> Reproducir E1
+            </button>
+            <button class="btn-mylist" id="modalMyListBtn" type="button"></button>
+            <button class="btn-mylist" id="modalEditBtn" type="button" title="Editar información (E)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              <span>Editar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-grid">
+          <div class="modal-desc" id="modalDesc">
+            Cargando información...
+          </div>
+          <div class="modal-details">
+            <span><strong>Elenco:</strong> <span id="modalCast">-</span></span>
+            <span><strong>Creador:</strong> <span id="modalCreator">-</span></span>
+            <span><strong>Tipo:</strong> <span id="modalType">-</span></span>
+            <span><strong>Géneros:</strong> <span id="modalGenres">-</span></span>
+          </div>
+        </div>
+
+        <!-- Aviso: videos nuevos o borrados en la carpeta de esta serie -->
+        <div class="series-changes" id="seriesChanges" role="alert" hidden></div>
+
+        <div class="episodes-section-header">
+          <h3>Episodios</h3>
+          <select class="season-select" id="seasonSelect"></select>
+        </div>
+
+        <div class="episodes-list" id="episodesList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editar información de una serie -->
+  <div class="modal" id="editModal">
+    <div class="modal-content edit-modal-content">
+      <button class="btn-close-modal" id="closeEditModal" type="button">&times;</button>
+      <form class="edit-form" id="editForm" novalidate>
+        <h2 class="edit-title">Editar información</h2>
+        <p class="edit-subtitle">Lo que cambies queda guardado como <strong>editado por ti</strong> y las búsquedas o traducciones automáticas no lo modificarán.</p>
+
+        <div class="edit-field" data-field="title">
+          <div class="edit-label-row">
+            <label for="editTitle">Título</label>
+            <span class="edit-lock">🔒 Editado por ti</span>
+            <button type="button" class="edit-reset">Restaurar automático</button>
+          </div>
+          <input type="text" id="editTitle" maxlength="150">
+          <label class="edit-check">
+            <input type="checkbox" id="editResearch" checked>
+            <span>Buscar la serie con este nombre y completar su información (título oficial, descripción, géneros, póster, banner…). Desmárcalo para guardar el título exactamente como lo escribes.</span>
+          </label>
+        </div>
+
+        <div class="edit-field" data-field="description">
+          <div class="edit-label-row">
+            <label for="editDescription">Descripción</label>
+            <span class="edit-lock">🔒 Editado por ti</span>
+            <button type="button" class="edit-reset">Restaurar automático</button>
+          </div>
+          <textarea id="editDescription" rows="6" maxlength="4000"></textarea>
+        </div>
+
+        <div class="edit-field" data-field="type">
+          <div class="edit-label-row">
+            <label for="editType">Tipo</label>
+            <span class="edit-lock">🔒 Editado por ti</span>
+            <button type="button" class="edit-reset">Restaurar automático</button>
+          </div>
+          <select id="editType" class="edit-select">
+            <option value="series">Serie</option>
+            <option value="movie">Película</option>
+          </select>
+        </div>
+
+        <div class="edit-field" data-field="genres">
+          <div class="edit-label-row">
+            <label for="editGenres">Géneros</label>
+            <span class="edit-lock">🔒 Editado por ti</span>
+            <button type="button" class="edit-reset">Restaurar automático</button>
+          </div>
+          <input type="text" id="editGenres" placeholder="Ej: Anime, Acción, Drama">
+          <small class="edit-hint">Sepáralos con comas.</small>
+        </div>
+
+        <div class="edit-images">
+          <div class="edit-field" data-field="poster">
+            <div class="edit-label-row">
+              <label>Póster</label>
+              <span class="edit-lock">🔒</span>
+              <button type="button" class="edit-reset">Restaurar</button>
+            </div>
+            <div class="edit-image-preview poster" id="editPosterPreview"></div>
+            <div class="edit-image-actions">
+              <label class="btn-edit-upload">
+                Subir imagen
+                <input type="file" accept="image/*" id="editPosterFile" hidden>
+              </label>
+              <input type="url" id="editPosterUrl" placeholder="o pega un enlace…">
+            </div>
+          </div>
+
+          <div class="edit-field" data-field="banner">
+            <div class="edit-label-row">
+              <label>Banner (fondo)</label>
+              <span class="edit-lock">🔒</span>
+              <button type="button" class="edit-reset">Restaurar</button>
+            </div>
+            <div class="edit-image-preview banner" id="editBannerPreview"></div>
+            <div class="edit-image-actions">
+              <label class="btn-edit-upload">
+                Subir imagen
+                <input type="file" accept="image/*" id="editBannerFile" hidden>
+              </label>
+              <input type="url" id="editBannerUrl" placeholder="o pega un enlace…">
+            </div>
+          </div>
+        </div>
+
+        <div class="edit-actions">
+          <button type="button" class="btn-edit-cancel" id="editCancelBtn">Cancelar</button>
+          <button type="submit" class="btn-submit-scan" id="editSaveBtn">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Perfil y configuración (se guarda en data/config.json) -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-content settings-modal-content">
+      <button class="btn-close-modal" id="closeSettingsModal" type="button" aria-label="Cerrar">&times;</button>
+      <div class="settings-layout">
+        <nav class="settings-tabs" role="tablist" aria-label="Secciones">
+          <h2 class="settings-heading">Configuración</h2>
+          <button type="button" class="settings-tab" role="tab" data-tab="profile"><i data-lucide="user"></i> Perfil</button>
+          <button type="button" class="settings-tab" role="tab" data-tab="playback"><i data-lucide="play"></i> Reproducción</button>
+          <button type="button" class="settings-tab" role="tab" data-tab="library"><i data-lucide="library"></i> Biblioteca</button>
+          <button type="button" class="settings-tab" role="tab" data-tab="data"><i data-lucide="database"></i> Datos</button>
+        </nav>
+
+        <form class="settings-body" id="settingsForm" novalidate>
+          <!-- Perfil -->
+          <section class="settings-panel" data-panel="profile">
+            <h3>Perfil</h3>
+            <div class="settings-profile-preview">
+              <span class="user-avatar is-xl" id="settingsAvatarPreview"><span>P</span></span>
+              <div>
+                <strong id="settingsNamePreview">Perfil Principal</strong>
+                <small>Así se ve tu perfil en la barra superior.</small>
+                <div class="settings-photo-actions" id="settingsPhotoActions">
+                  <label class="btn-edit-upload avatar-photo-btn">
+                    <i data-lucide="camera"></i> Subir foto
+                    <input type="file" accept="image/*" id="settingsPhotoFile" hidden>
+                  </label>
+                  <button type="button" class="avatar-photo-remove" id="settingsPhotoAdjust">Ajustar foto</button>
+                  <button type="button" class="avatar-photo-remove" id="settingsPhotoRemove">Quitar foto</button>
+                </div>
+              </div>
+            </div>
+            <div class="edit-field">
+              <label class="settings-label" for="settingsName">Nombre</label>
+              <input type="text" id="settingsName" maxlength="24" autocomplete="off">
+            </div>
+            <div class="edit-field">
+              <span class="settings-label">Color del avatar</span>
+              <div class="settings-colors" id="settingsColors" role="radiogroup" aria-label="Color del avatar"></div>
+            </div>
+            <label class="settings-row" id="settingsDefaultRow">
+              <span>
+                <strong>Iniciar siempre con este perfil</strong>
+                <small>Al abrir la app se entra directo, sin preguntar "¿Quién está viendo?".</small>
+              </span>
+              <input type="checkbox" class="settings-switch" id="settingsDefaultProfile">
+            </label>
+            <div class="settings-row">
+              <span>
+                <strong>Idioma de la app</strong>
+                <small>Los textos de la app. La información de las series llega en español.</small>
+              </span>
+              <select id="settingsLanguage" class="edit-select">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+          </section>
+
+          <!-- Reproducción -->
+          <section class="settings-panel" data-panel="playback">
+            <h3>Reproducción</h3>
+            <label class="settings-row">
+              <span>
+                <strong>Reproducir el siguiente episodio</strong>
+                <small>Al terminar un episodio empieza el siguiente automáticamente.</small>
+              </span>
+              <input type="checkbox" class="settings-switch" id="settingsAutoplay">
+            </label>
+            <label class="settings-row">
+              <span>
+                <strong>Subtítulos activados</strong>
+                <small>Muestra los subtítulos (en español si hay) al abrir un episodio.</small>
+              </span>
+              <input type="checkbox" class="settings-switch" id="settingsSubs">
+            </label>
+            <div class="settings-row">
+              <span>
+                <strong>Velocidad inicial</strong>
+                <small>Con la que empieza cada vez que abres la app.</small>
+              </span>
+              <select id="settingsSpeed" class="edit-select"></select>
+            </div>
+            <div class="settings-row">
+              <span>
+                <strong>Volumen inicial</strong>
+                <small id="settingsVolumeText">100%</small>
+              </span>
+              <input type="range" id="settingsVolume" class="settings-range" min="0" max="1" step="0.05">
+            </div>
+          </section>
+
+          <!-- Biblioteca -->
+          <section class="settings-panel" data-panel="library">
+            <h3>Biblioteca e información</h3>
+            <label class="settings-row">
+              <span>
+                <strong>Títulos en español</strong>
+                <small>Al escribir o buscar un título en inglés se guarda traducido (no se aplica al anime).</small>
+              </span>
+              <input type="checkbox" class="settings-switch" id="settingsTranslateTitles">
+            </label>
+            <div class="edit-field">
+              <label class="settings-label" for="settingsTmdbKey">Clave de TMDB</label>
+              <div class="settings-key-row">
+                <input type="password" id="settingsTmdbKey" autocomplete="off" spellcheck="false">
+                <button type="button" class="btn-edit-upload" id="settingsTmdbToggle" title="Mostrar / ocultar">
+                  <i data-lucide="eye"></i>
+                </button>
+              </div>
+              <small class="edit-hint" id="settingsTmdbHint">Con ella la información (descripción, géneros, pósters) llega en español. Es gratuita en themoviedb.org.</small>
+            </div>
+            <div class="settings-row">
+              <span>
+                <strong>Volver a buscar la información</strong>
+                <small>Consulta de nuevo todas las series. Lo que editaste a mano no cambia.</small>
+              </span>
+              <button type="button" class="btn-edit-cancel" id="settingsRefreshBtn"><i data-lucide="refresh-cw"></i> Buscar</button>
+            </div>
+          </section>
+
+          <!-- Datos -->
+          <section class="settings-panel" data-panel="data">
+            <h3>Tus datos</h3>
+            <div class="settings-stats" id="settingsStats"></div>
+            <div class="settings-row">
+              <span>
+                <strong>Borrar "Continuar viendo"</strong>
+                <small>Olvida en qué minuto ibas de cada episodio.</small>
+              </span>
+              <button type="button" class="btn-danger" id="settingsClearProgress" data-confirm="¿Seguro? Clic otra vez"><i data-lucide="trash-2"></i> Borrar</button>
+            </div>
+            <div class="settings-row">
+              <span>
+                <strong>Vaciar Favoritos</strong>
+                <small>Quita todas las series de tu lista. Las series no se borran.</small>
+              </span>
+              <button type="button" class="btn-danger" id="settingsClearMyList" data-confirm="¿Seguro? Clic otra vez"><i data-lucide="trash-2"></i> Vaciar</button>
+            </div>
+          </section>
+
+          <div class="edit-actions settings-actions">
+            <button type="button" class="btn-edit-cancel" id="settingsCancelBtn">Cancelar</button>
+            <button type="submit" class="btn-submit-scan" id="settingsSaveBtn">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ventana de carga (búsqueda de información con un título nuevo) -->
+  <div class="modal" id="loadingModal" aria-live="polite">
+    <div class="loading-box">
+      <div class="loading-spinner"></div>
+      <h3>Cargando nueva información…</h3>
+      <p id="loadingText">Buscando la serie</p>
+      <small>Descripción, géneros, póster y banner</small>
+    </div>
+  </div>
+
+  <!-- Local Folder Scan Modal -->
+  <div class="modal" id="scanModal" data-step="choose">
+    <div class="modal-content scan-wizard">
+      <button class="btn-close-modal" id="closeScanModal" aria-label="Cerrar">&times;</button>
+
+      <!-- Paso 1: elegir cómo agregar -->
+      <section class="scan-step" data-step="choose">
+        <span class="ch-eyebrow">Agregar series</span>
+        <h2 class="ch-title">¿Dónde están tus videos?</h2>
+
+        <div class="ch-options">
+          <button type="button" class="ch-option is-primary" id="scanAutoBtn">
+            <span class="ch-icon" aria-hidden="true"><i data-lucide="scan-search"></i></span>
+            <span class="ch-text">
+              <strong>Buscar en mi PC</strong>
+              <span>Encontramos las carpetas con videos por ti.</span>
+            </span>
+            <span class="ch-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+
+          <button type="button" class="ch-option" id="scanManualBtn">
+            <span class="ch-icon" aria-hidden="true"><i data-lucide="folder-open"></i></span>
+            <span class="ch-text">
+              <strong>Elegir una carpeta</strong>
+              <span>Tú indicas dónde están.</span>
+            </span>
+            <span class="ch-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+        </div>
+
+        <div class="ch-foot">
+          <span class="ch-formats"><b>MP4</b> <b>MKV</b> <b>WEBM</b></span>
+          <span class="ch-safe">No movemos ni borramos nada</span>
+        </div>
+
+        <button type="button" class="ch-tutorial" data-scan-help>
+          <span class="ch-tutorial-thumb" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span>
+          <span class="ch-tutorial-text">
+            <strong>¿Primera vez? Ver tutorial</strong>
+            <span>37 s</span>
+          </span>
+        </button>
+      </section>
+
+      <!-- Tutorial: cómo organizar los videos -->
+      <section class="scan-step" data-step="help">
+        <h2>Cómo preparar tus videos</h2>
+        <p class="scan-lead">Mira cómo se hace: 4 pasos, las temporadas y los errores más comunes.</p>
+
+        <div class="tuto" id="tuto">
+          <div class="tuto-frame" id="tutoFrame">
+          <div class="tuto-stage" id="tutoStage">
+            <!-- Escena 1-3: el explorador de archivos -->
+            <div class="tuto-scene tuto-explorer" id="tutoExplorer">
+              <div class="tuto-titlebar">
+                <svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#F5C04A"/></svg>
+                Mis Videos
+                <span class="tuto-winbtns"><i></i><i></i><i></i></span>
+              </div>
+              <div class="tuto-folder" id="tutoFolder">
+                <span class="tuto-folder-icon">
+                  <svg viewBox="0 0 64 52"><path d="M2 8a6 6 0 0 1 6-6h14l6 6h28a6 6 0 0 1 6 6v30a6 6 0 0 1-6 6H8a6 6 0 0 1-6-6z" fill="#D9A43A"/><path d="M2 16a6 6 0 0 1 6-6h48a6 6 0 0 1 6 6v28a6 6 0 0 1-6 6H8a6 6 0 0 1-6-6z" fill="#F5C04A"/></svg>
+                  <b class="tuto-folder-count" id="tutoFolderCount">0</b>
+                </span>
+                <span class="tuto-name" id="tutoName"></span>
+              </div>
+              <div class="tuto-file" data-file="0"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><span>Mao Mao 01.mp4</span></div>
+              <div class="tuto-file" data-file="1"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><span>Mao Mao 02.mp4</span></div>
+              <div class="tuto-file" data-file="2"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><span>Mao Mao 03.mp4</span></div>
+              <div class="tuto-menu" id="tutoMenu">
+                <div>Ver</div>
+                <div>Ordenar por</div>
+                <hr>
+                <div class="is-hot" id="tutoMenuNew">Nuevo <span>›</span></div>
+                <div class="tuto-submenu" id="tutoSubmenu">
+                  <div class="is-hot"><svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#F5C04A"/></svg> Carpeta</div>
+                  <div>Documento de texto</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Escena 4: la app -->
+            <div class="tuto-scene tuto-app" id="tutoApp">
+              <!-- Banner y póster reales de la serie de ejemplo (public/img/tutorial) -->
+              <div class="tuto-app-banner" id="tutoAppBanner"></div>
+              <div class="tuto-appbar">
+                <b class="tuto-logo">HIY</b>
+                <span class="tuto-nav">Inicio <span>Series</span> <span>Favoritos</span></span>
+                <span class="tuto-scanbtn" id="tutoScanBtn"><i data-lucide="folder-search"></i> Escanear PC</span>
+              </div>
+              <div class="tuto-radar" id="tutoRadar"><span class="tuto-spinner"></span> Buscando videos…</div>
+              <div class="tuto-row">
+                <div class="tuto-card is-ghost"></div>
+                <div class="tuto-card is-ghost"></div>
+                <div class="tuto-card is-new" id="tutoCard"><small>3 episodios</small></div>
+              </div>
+              <div class="tuto-done" id="tutoDone"><i data-lucide="circle-check"></i> ¡Tu serie ya está en la biblioteca!</div>
+            </div>
+
+            <!-- Escena 5: varias temporadas. La estructura se arma como un árbol de carpetas;
+                 cada temporada tiene su color (verde T1, azul T2) en el árbol y en la app -->
+            <div class="tuto-scene tuto-explorer tuto-seasons" id="tutoSeasons">
+              <div class="tuto-titlebar">
+                <svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#F5C04A"/></svg>
+                Mao Mao Héroes de Puro Corazón
+                <span class="tuto-winbtns"><i></i><i></i><i></i></span>
+              </div>
+              <ul class="tuto-tree">
+                <li class="tt-row lvl0" data-row="0"><svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#F5C04A"/></svg><span>Mao Mao Héroes de Puro Corazón</span></li>
+                <li class="tt-row lvl1 is-t1" data-row="1"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><span>Mao Mao 01.mp4</span></li>
+                <li class="tt-row lvl1 is-t1" data-row="2"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><span>Mao Mao 02.mp4</span></li>
+                <li class="tt-row lvl1 is-folder" data-row="3"><svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#F5C04A"/></svg><span>Temporada 2</span><em class="tt-new">nueva carpeta</em></li>
+                <li class="tt-row lvl2 is-t2" data-row="4"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><span>Mao Mao 01.mp4</span></li>
+                <li class="tt-row lvl2 is-t2" data-row="5"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><span>Mao Mao 02.mp4</span></li>
+              </ul>
+              <div class="tt-brace is-t1" id="tutoBrace1"><span>Temporada 1</span></div>
+              <div class="tt-brace is-t2" id="tutoBrace2"><span>Temporada 2</span></div>
+
+              <!-- Cómo se ve después en la app -->
+              <div class="tuto-seasons-app" id="tutoSeasonsApp">
+                <div class="tuto-sa-head"><b>Episodios</b><span class="tuto-sa-select" id="tutoSaSelect">Temporada 1</span></div>
+                <ol class="tuto-sa-eps">
+                  <li><b>1</b>Mao Mao 01</li>
+                  <li><b>2</b>Mao Mao 02</li>
+                </ol>
+              </div>
+            </div>
+            <!-- Escena 6: lo que NO se debe hacer -->
+            <div class="tuto-scene tuto-dont" id="tutoDont">
+              <!-- Error 1: videos sueltos y mezclados -->
+              <div class="tuto-dont-panel">
+                <div class="tuto-mini-win">
+                  <div class="tuto-titlebar">
+                    <svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#F5C04A"/></svg>
+                    Descargas
+                  </div>
+                  <div class="tuto-mess">
+                    <span><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg>Mao Mao 01.mp4</span>
+                    <span><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg>Peli de acción.mkv</span>
+                    <span><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg>Episodio 05.mkv</span>
+                    <span><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#3B82F6"/><path d="M10 11v6l5-3z" fill="#fff"/></svg>video123.mp4</span>
+                  </div>
+                </div>
+                <span class="tuto-stamp"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></span>
+                <div class="tuto-result">
+                  <span class="tuto-arrow">→</span>
+                  <div class="tuto-card is-bad-card"><span>DESCARGAS</span><small>4 episodios</small></div>
+                  <p>Todo sale mezclado como <b>una sola serie</b> llamada «Descargas»</p>
+                </div>
+              </div>
+
+              <!-- Error 2: carpeta con un nombre cualquiera -->
+              <div class="tuto-dont-panel">
+                <div class="tuto-bad-folder">
+                  <svg viewBox="0 0 64 52"><path d="M2 8a6 6 0 0 1 6-6h14l6 6h28a6 6 0 0 1 6 6v30a6 6 0 0 1-6 6H8a6 6 0 0 1-6-6z" fill="#D9A43A"/><path d="M2 16a6 6 0 0 1 6-6h48a6 6 0 0 1 6 6v28a6 6 0 0 1-6 6H8a6 6 0 0 1-6-6z" fill="#F5C04A"/></svg>
+                  <span>Nueva carpeta (2)</span>
+                </div>
+                <span class="tuto-stamp"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></span>
+                <div class="tuto-result">
+                  <span class="tuto-arrow">→</span>
+                  <div class="tuto-card is-unknown-card"><b>?</b><small>Nueva carpeta (2)</small></div>
+                  <p>No encontramos <b>póster ni descripción</b> porque el nombre no es el de la serie</p>
+                </div>
+              </div>
+
+              <!-- Error 3: formatos que no se leen -->
+              <div class="tuto-dont-panel">
+                <div class="tuto-mini-win">
+                  <div class="tuto-titlebar">
+                    <svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#F5C04A"/></svg>
+                    Mao Mao Héroes de Puro Corazón
+                  </div>
+                  <div class="tuto-mess is-list">
+                    <span class="is-off"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#6B7280"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><em>Mao Mao 01<b>.avi</b></em></span>
+                    <span class="is-off"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#6B7280"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><em>Mao Mao 02<b>.wmv</b></em></span>
+                    <span class="is-off"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#6B7280"/><path d="M10 11v6l5-3z" fill="#fff"/></svg><em>Mao Mao 03<b>.mov</b></em></span>
+                  </div>
+                </div>
+                <span class="tuto-stamp"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></span>
+                <div class="tuto-result">
+                  <span class="tuto-arrow">→</span>
+                  <div class="tuto-formats">
+                    <span class="is-ok">✓ MP4</span>
+                    <span class="is-ok">✓ MKV</span>
+                    <span class="is-ok">✓ WEBM</span>
+                  </div>
+                  <p>Los <b>.avi, .wmv o .mov</b> no aparecen. Conviértelos a MP4 primero.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="tuto-cursor" id="tutoCursor">
+              <span class="tuto-click"></span>
+              <svg viewBox="0 0 24 24"><path d="M5 3l14 8.5-6.2 1.4L9.6 19z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg>
+            </div>
+
+            <div class="tuto-caption" id="tutoCaption"><b id="tutoCapNum">1</b><span id="tutoCapText"></span></div>
+
+            <button type="button" class="tuto-replay" id="tutoReplay" aria-label="Ver otra vez">
+              <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3v5h5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Ver otra vez
+            </button>
+          </div>
+          </div>
+
+          <div class="tuto-controls">
+            <button type="button" class="tuto-play" id="tutoPlay" aria-label="Pausar">
+              <svg class="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor"/></svg>
+              <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="currentColor"/></svg>
+            </button>
+            <div class="tuto-chapters" id="tutoChapters"></div>
+          </div>
+        </div>
+
+        <div class="scan-actions">
+          <button type="button" class="scan-btn-secondary" data-scan-back><i data-lucide="arrow-left"></i> Volver</button>
+          <span class="scan-actions-end">
+            <button type="button" class="scan-btn-secondary" id="helpManualBtn"><i data-lucide="folder-open"></i> Elegir carpeta</button>
+            <button type="button" class="btn-submit-scan" id="helpStartBtn"><i data-lucide="scan-search"></i> Buscar en mi PC</button>
+          </span>
+        </div>
+      </section>
+
+      <!-- Paso 2: buscando -->
+      <section class="scan-step" data-step="searching" aria-live="polite">
+        <div class="scan-radar">
+          <span class="scan-radar-ring"></span>
+          <span class="scan-radar-ring"></span>
+          <i data-lucide="scan-search"></i>
+        </div>
+        <h2>Buscando videos en tu PC…</h2>
+        <p class="scan-current" id="scanCurrent">Preparando…</p>
+        <div class="scan-stats">
+          <div><i data-lucide="folder"></i><b id="scanDirsCount">0</b><span>carpetas revisadas</span></div>
+          <div class="is-found"><i data-lucide="clapperboard"></i><b id="scanFoundCount">0</b><span>con videos</span></div>
+        </div>
+        <button type="button" class="scan-btn-secondary" id="scanStopBtn">
+          <i data-lucide="circle-stop"></i> Detener y ver lo encontrado
+        </button>
+      </section>
+
+      <!-- Paso 3: resultados -->
+      <section class="scan-step" data-step="results">
+        <div class="scan-results-head">
+          <div class="scan-hero-icon is-small"><i data-lucide="folder-check"></i></div>
+          <div>
+            <h2 id="scanResultsTitle">Encontramos carpetas con videos</h2>
+            <p class="scan-lead">Marca las que quieres agregar a tu biblioteca.</p>
+          </div>
+        </div>
+        <div class="scan-toolbar">
+          <span id="scanSelectedInfo"></span>
+          <button type="button" class="scan-link-btn" id="scanToggleAllBtn">Marcar todas</button>
+        </div>
+        <ul class="scan-results" id="scanResults"></ul>
+        <div class="scan-empty" id="scanEmpty" hidden>
+          <i data-lucide="search-x"></i>
+          <strong>No encontramos videos</strong>
+          <span>Puede que estén en una carpeta especial o en un disco desconectado.</span>
+          <button type="button" class="scan-help-link" data-scan-help>
+            <i data-lucide="circle-help"></i> Ver cómo preparar mis videos
+          </button>
+        </div>
+        <div class="scan-actions">
+          <button type="button" class="scan-btn-secondary" data-scan-back><i data-lucide="arrow-left"></i> Volver</button>
+          <button type="button" class="scan-btn-secondary" id="scanResultsManualBtn" hidden><i data-lucide="folder-open"></i> Elegir carpeta</button>
+          <button type="button" class="btn-submit-scan" id="scanAddBtn"><i data-lucide="folder-plus"></i> <span>Agregar</span></button>
+        </div>
+      </section>
+
+      <!-- Paso manual (en el navegador, sin el selector de carpetas de Windows) -->
+      <section class="scan-step" data-step="manual">
+        <div class="scan-hero-icon"><i data-lucide="folder-open"></i></div>
+        <h2>Elegir una carpeta</h2>
+        <p class="scan-lead">
+          Escribe la ruta de la carpeta donde guardas tus series (formatos: <strong>MP4, MKV, WEBM</strong>).
+        </p>
+
+        <form class="scan-form" id="scanForm">
+          <div class="form-group">
+            <label for="folderPathInput">Ruta de la carpeta:</label>
+            <input type="text" id="folderPathInput" placeholder="Ej: C:\Users\TuUsuario\Videos\Series">
+          </div>
+          <button type="submit" class="btn-submit-scan" id="submitScanBtn">
+            <i data-lucide="folder-search" style="display:inline-block; vertical-align: middle;"></i> Escanear Archivos
+          </button>
+          <button type="button" class="scan-btn-secondary" data-scan-back><i data-lucide="arrow-left"></i> Volver</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <!-- Custom Fullscreen Video Player -->
+  <div class="player-overlay" id="playerOverlay">
+    <div class="player-container">
+      <video id="mainVideo" preload="metadata"></video>
+
+      <!-- Subtítulos (se dibujan aquí para poder subirlos cuando aparecen los controles) -->
+      <div class="player-subs" id="playerSubs" aria-live="off"></div>
+
+      <!-- Aviso en pantalla de los atajos -->
+      <div class="player-osd" id="playerOsd"></div>
+
+      <!-- Animación de reproducir / pausar en el centro -->
+      <div class="player-flash" id="playerFlash"></div>
+
+      <!-- Animación de adelantar / retroceder (a los lados) -->
+      <div class="player-skip left" id="skipLeft">
+        <div class="skip-circle">
+          <div class="skip-arrows"><span>◀</span><span>◀</span><span>◀</span></div>
+          <div class="skip-text">10 s</div>
+        </div>
+      </div>
+      <div class="player-skip right" id="skipRight">
+        <div class="skip-circle">
+          <div class="skip-arrows"><span>▶</span><span>▶</span><span>▶</span></div>
+          <div class="skip-text">10 s</div>
+        </div>
+      </div>
+
+      <!-- Indicador de volumen -->
+      <div class="player-volume-hud" id="volumeHud">
+        <span class="vh-icon"></span>
+        <div class="vh-bar"><div class="vh-fill"></div></div>
+        <span class="vh-text">100%</span>
+      </div>
+
+      <!-- Panel de ayuda de atajos (tecla ? o H) -->
+      <div class="player-help" id="playerHelp">
+        <h3>Atajos de teclado</h3>
+        <ul>
+          <li><kbd>Espacio</kbd> <kbd>K</kbd> <span>Reproducir / Pausar</span></li>
+          <li><kbd>←</kbd> <kbd>→</kbd> <span>Retroceder / Adelantar 10 s</span></li>
+          <li><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd> <span>Retroceder / Adelantar 30 s</span></li>
+          <li><kbd>J</kbd> <kbd>L</kbd> <span>Retroceder / Adelantar 10 s</span></li>
+          <li><kbd>↑</kbd> <kbd>↓</kbd> <span>Subir / Bajar volumen</span></li>
+          <li><kbd>M</kbd> <span>Silenciar</span></li>
+          <li><kbd>F</kbd> <span>Pantalla completa (o doble clic)</span></li>
+          <li><kbd>N</kbd> <span>Siguiente episodio</span></li>
+          <li><kbd>C</kbd> <span>Activar / desactivar subtítulos</span></li>
+          <li><kbd>&lt;</kbd> <kbd>&gt;</kbd> <span>Bajar / Subir velocidad</span></li>
+          <li><kbd>0</kbd>–<kbd>9</kbd> <span>Ir al 0%–90% del episodio</span></li>
+          <li><kbd>Inicio</kbd> <kbd>Fin</kbd> <span>Ir al principio / final</span></li>
+          <li><kbd>Esc</kbd> <span>Salir de pantalla completa / Cerrar</span></li>
+          <li><kbd>?</kbd> <kbd>H</kbd> <span>Mostrar / ocultar esta ayuda</span></li>
+        </ul>
+      </div>
+
+      <div class="player-controls-wrapper" id="playerControls">
+        
+        <!-- Top Bar -->
+        <div class="player-top-bar">
+          <button class="btn-back-player" id="btnBackPlayer">
+            <i data-lucide="arrow-left"></i>
+          </button>
+          <div class="player-title-info">
+            <h2 id="playerSeriesTitle">Nombre Serie</h2>
+            <p id="playerEpisodeTitle">T1:E1 - Título Episodio</p>
+          </div>
+          <span class="format-badge format-mp4" id="playerFormatBadge" style="margin-left: auto;">MP4</span>
+        </div>
+
+        <!-- Bottom Controls Bar -->
+        <div class="player-bottom-bar">
+          
+          <!-- Scrubber Progress Bar -->
+          <div class="scrubber-container">
+            <span class="time-display" id="currentTimeDisplay">00:00</span>
+            <div class="progress-bar-wrap" id="progressBarWrap">
+              <div class="progress-filled" id="progressFilled"></div>
+              <!-- Miniatura del punto del video que está bajo el mouse -->
+              <div class="scrub-preview" id="scrubPreview" aria-hidden="true">
+                <canvas class="scrub-frame" id="scrubFrame" width="192" height="108"></canvas>
+                <span class="scrub-time" id="scrubTime">00:00</span>
+              </div>
+            </div>
+            <span class="time-display" id="durationDisplay">00:00</span>
+          </div>
+
+          <div class="controls-row">
+            <div class="controls-left">
+              <button class="ctrl-btn" id="btnPlayPause" title="Reproducir/Pausar (Espacio)">
+                <svg viewBox="0 0 24 24" class="ctrl-svg" id="iconPlayPause" aria-hidden="true">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+              <button class="ctrl-btn btn-skip" id="btnRewind10" title="Retroceder 10s (←)">
+                <svg viewBox="0 0 24 24" class="ctrl-svg" aria-hidden="true">
+                  <path d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8zm-1.1 11h-1.1V11.8l-.05.02-1.29.93-.46-.66 1.9-1.39h.99v5.3zm4.27-5.4c1.37 0 2.23.95 2.23 2.37v.9c0 1.43-.86 2.37-2.23 2.37s-2.23-.95-2.23-2.37v-.9c0-1.42.86-2.37 2.23-2.37zm0 4.67c.72 0 1.13-.57 1.13-1.4v-.9c0-.83-.41-1.4-1.13-1.4s-1.13.57-1.13 1.4v.9c0 .83.41 1.4 1.13 1.4z"/>
+                </svg>
+              </button>
+              <button class="ctrl-btn btn-skip" id="btnForward10" title="Adelantar 10s (→)">
+                <svg viewBox="0 0 24 24" class="ctrl-svg" aria-hidden="true">
+                  <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 8-8 8-8zm-1.1 11h-1.1V11.8l-.05.02-1.29.93-.46-.66 1.9-1.39h.99v5.3zm4.27-5.4c1.37 0 2.23.95 2.23 2.37v.9c0 1.43-.86 2.37-2.23 2.37s-2.23-.95-2.23-2.37v-.9c0-1.42.86-2.37 2.23-2.37zm0 4.67c.72 0 1.13-.57 1.13-1.4v-.9c0-.83-.41-1.4-1.13-1.4s-1.13.57-1.13 1.4v.9c0 .83.41 1.4 1.13 1.4z"/>
+                </svg>
+              </button>
+              
+              <div class="volume-container" id="volumeContainer">
+                <button class="ctrl-btn" id="btnMute" title="Silenciar (M) · Volumen (↑ ↓)">
+                  <svg viewBox="0 0 24 24" class="ctrl-svg" id="iconVolume" aria-hidden="true">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                  </svg>
+                </button>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.05" value="1" aria-label="Control de volumen">
+              </div>
+            </div>
+
+            <div class="controls-right">
+              <button class="ctrl-btn" id="btnHelp" title="Atajos de teclado (?)" style="font-size: 16px; font-weight: 700;">
+                ?
+              </button>
+              <button class="ctrl-btn" id="btnSpeed" title="Velocidad de reproducción (&lt; &gt;)" style="font-size: 14px; font-weight: 700;">
+                1x
+              </button>
+              <!-- Idioma del audio: solo aparece si el audio se convierte y hay varias pistas -->
+              <div class="subs-container" id="audioContainer" hidden>
+                <button class="ctrl-btn" id="btnAudio" title="Idioma del audio" aria-haspopup="true" aria-expanded="false">
+                  <svg viewBox="0 0 24 24" class="ctrl-svg" aria-hidden="true">
+                    <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
+                  </svg>
+                </button>
+                <div class="subs-menu" id="audioMenu" role="menu" aria-label="Audio"></div>
+              </div>
+              <div class="subs-container">
+                <button class="ctrl-btn" id="btnSubs" title="Subtítulos (C)" aria-haspopup="true" aria-expanded="false">
+                  <svg viewBox="0 0 24 24" class="ctrl-svg" aria-hidden="true">
+                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 12h4v2H4v-2zm10 6H4v-2h10v2zm6 0h-4v-2h4v2zm0-4H10v-2h10v2z"/>
+                  </svg>
+                </button>
+                <div class="subs-menu" id="subsMenu" role="menu" aria-label="Subtítulos"></div>
+                <input type="file" id="subsFileInput" accept=".srt,.vtt" hidden>
+              </div>
+              <button class="ctrl-btn" id="btnNextEp" title="Siguiente Episodio (N)">
+                <i data-lucide="skip-forward"></i>
+              </button>
+              <button class="ctrl-btn" id="btnFullscreen" title="Pantalla Completa (F)">
+                <i data-lucide="maximize"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Perfiles: elegir quién está viendo, o crear el primero (public/js/app.js → profile gate) -->
+  <div class="profile-gate" id="profileGate" data-step="pick" hidden>
+    <section class="pg-step" data-step="pick" aria-labelledby="pgPickTitle">
+      <h1 class="pg-title" id="pgPickTitle">¿Quién está viendo?</h1>
+      <div class="pg-grid" id="pgGrid"></div>
+      <div class="pg-foot">
+        <button type="button" class="pg-btn-outline" id="pgManageBtn">Administrar perfiles</button>
+      </div>
+    </section>
+
+    <section class="pg-step" data-step="form" aria-labelledby="pgFormTitle">
+      <form class="pg-form" id="pgForm" novalidate>
+        <h1 class="pg-title" id="pgFormTitle">Crea tu perfil</h1>
+        <p class="pg-lead" id="pgFormLead">Cada perfil tiene su propio "Continuar viendo", sus Favoritos y su idioma.</p>
+        <div class="pg-form-body">
+          <div class="avatar-photo-col">
+            <span class="user-avatar pg-avatar-preview" id="pgAvatarPreview"><span>P</span></span>
+            <label class="btn-edit-upload avatar-photo-btn">
+              <i data-lucide="camera"></i> Subir foto
+              <input type="file" accept="image/*" id="pgPhotoFile" hidden>
+            </label>
+            <button type="button" class="avatar-photo-remove" id="pgPhotoAdjust">Ajustar foto</button>
+            <button type="button" class="avatar-photo-remove" id="pgPhotoRemove">Quitar foto</button>
+          </div>
+          <div class="pg-fields">
+            <div class="edit-field">
+              <label class="settings-label" for="pgName">Nombre</label>
+              <input type="text" id="pgName" maxlength="24" autocomplete="off" placeholder="Ej: Ana">
+            </div>
+            <div class="edit-field">
+              <span class="settings-label">Color del avatar</span>
+              <div class="settings-colors" id="pgColors" role="radiogroup" aria-label="Color del avatar"></div>
+            </div>
+            <div class="edit-field">
+              <label class="settings-label" for="pgLanguage">Idioma de la app</label>
+              <select id="pgLanguage" class="edit-select">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="pg-actions">
+          <button type="button" class="btn-danger" id="pgDeleteBtn" data-confirm="¿Seguro? Clic otra vez"><i data-lucide="trash-2"></i> Eliminar perfil</button>
+          <span class="pg-actions-end">
+            <button type="button" class="btn-edit-cancel" id="pgCancelBtn">Cancelar</button>
+            <button type="submit" class="btn-submit-scan" id="pgSaveBtn">Crear perfil</button>
+          </span>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- Tras elegir un perfil: ¿iniciar siempre con él? (public/js/app.js → askDefaultProfile) -->
+  <div class="photo-cropper pg-ask" id="pgAsk" hidden>
+    <div class="pc-box pg-ask-box" role="dialog" aria-modal="true" aria-labelledby="pgAskTitle">
+      <span class="user-avatar pg-ask-avatar" id="pgAskAvatar"><span>P</span></span>
+      <h2 class="pc-title" id="pgAskTitle">¿Quieres iniciar siempre con este perfil?</h2>
+      <p class="pc-hint" id="pgAskText"></p>
+      <div class="pg-ask-actions">
+        <button type="button" class="btn-edit-cancel" id="pgAskNo">No, preguntar siempre</button>
+        <button type="button" class="btn-submit-scan" id="pgAskYes">Sí, iniciar siempre</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ajustar la foto del perfil: arrastrar para centrarla y zoom (public/js/app.js → photo cropper) -->
+  <div class="photo-cropper" id="photoCropper" hidden>
+    <div class="pc-box" role="dialog" aria-modal="true" aria-labelledby="pcTitle">
+      <h2 class="pc-title" id="pcTitle">Ajustar foto</h2>
+      <p class="pc-hint">Arrastra la foto o usa las barras para elegir qué parte se ve. Con el zoom la acercas.</p>
+      <div class="pc-viewport" id="pcViewport" tabindex="0" data-native-scroll aria-label="Foto: arrastra o usa las flechas para moverla">
+        <img id="pcImage" alt="" draggable="false">
+        <span class="pc-grid" aria-hidden="true"></span>
+      </div>
+      <div class="pc-zoom" title="Zoom">
+        <i data-lucide="zoom-out"></i>
+        <input type="range" id="pcZoom" min="1" max="4" step="0.01" value="1" aria-label="Zoom">
+        <i data-lucide="zoom-in"></i>
+      </div>
+      <!-- Posición dentro de lo que sobra de la foto: 0 = un borde, 100 = el otro -->
+      <div class="pc-zoom" title="Arriba / abajo">
+        <i data-lucide="arrow-up-to-line"></i>
+        <input type="range" id="pcPosY" min="0" max="100" step="0.1" value="50" aria-label="Mover arriba o abajo">
+        <i data-lucide="arrow-down-to-line"></i>
+      </div>
+      <div class="pc-zoom" title="Izquierda / derecha">
+        <i data-lucide="arrow-left-to-line"></i>
+        <input type="range" id="pcPosX" min="0" max="100" step="0.1" value="50" aria-label="Mover a la izquierda o a la derecha">
+        <i data-lucide="arrow-right-to-line"></i>
+      </div>
+      <p class="pc-note" id="pcNote" hidden></p>
+      <div class="pc-actions">
+        <button type="button" class="avatar-photo-remove" id="pcReset">Centrar de nuevo</button>
+        <span class="pc-actions-end">
+          <button type="button" class="btn-edit-cancel" id="pcCancel">Cancelar</button>
+          <button type="button" class="btn-submit-scan" id="pcApply">Aplicar</button>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- App Scripts -->
+  <script src="js/smooth-scroll.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/episode-media.js"></script>
+  <script src="js/tutorial.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
