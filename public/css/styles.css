@@ -2072,7 +2072,13 @@ video#mainVideo {
 .player-overlay.idle .player-controls-wrapper {
   opacity: 0;
   pointer-events: none;
-  cursor: none;
+}
+
+/* Cursor oculto con los controles. No basta con ponerlo en .player-controls-wrapper: con
+   pointer-events: none el mouse "atraviesa" esa capa y se ve el cursor del video de debajo */
+.player-overlay.idle,
+.player-overlay.idle * {
+  cursor: none !important;
 }
 
 .player-top-bar {
