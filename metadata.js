@@ -5,7 +5,8 @@
 
    Fuentes (en este orden):
      1. TMDB    – películas, series y anime, en español. Requiere una API key gratuita
-                  (variable de entorno TMDB_API_KEY o "tmdbApiKey" en data/config.json).
+                  (variable de entorno TMDB_API_KEY; en la app de escritorio, guardada cifrada
+                  por main.js; con "node server.js" a mano, "tmdbApiKey" en data/config.json).
      2. AniList – anime. Sin clave.
      3. TVMaze  – series de todo tipo (tolera errores de escritura). Sin clave.
    Se elige el resultado cuyo título se parece más al nombre de la carpeta.
@@ -112,8 +113,16 @@ function writeJSON(file, data) {
   }
 }
 
+// En la app de escritorio la clave no está en config.json: main.js la guarda cifrada y se la
+// pasa al servidor al arrancar (ver "Clave de TMDB cifrada" en server.js). Aquí vive en memoria.
+let tmdbKeyInMemory = '';
+function setTmdbKey(key) {
+  tmdbKeyInMemory = String(key || '').trim();
+}
+
 function getTmdbKey() {
   if (process.env.TMDB_API_KEY) return process.env.TMDB_API_KEY.trim();
+  if (tmdbKeyInMemory) return tmdbKeyInMemory;
   const cfg = readJSON(CONFIG_FILE, {});
   return (cfg.tmdbApiKey || '').trim();
 }
@@ -1216,5 +1225,6 @@ module.exports = {
   startRefresh,
   getStatus,
   preserveMetadata,
-  getTmdbKey
+  getTmdbKey,
+  setTmdbKey
 };

@@ -685,7 +685,7 @@ app.get('/api/settings', (req, res) => {
 // Body (todo opcional): { profile: { name, color }, playback: { autoplayNext, speed, volume },
 //                         library: { translateTitles }, language: 'es' | 'en',
 //                         tmdbApiKey: 'clave' | '' (quitarla) }
-app.put('/api/settings', (req, res) => {
+app.put('/api/settings', async (req, res) => {
   const { profile, playback, library, tmdbApiKey, language } = req.body || {};
   const cfg = readJSON(CONFIG_FILE, {});
   // Sin perfiles todavía, se guarda como antes (config.profile / config.playback / config.language)
@@ -721,15 +721,75 @@ app.put('/api/settings', (req, res) => {
     if (key && !/^[A-Za-z0-9._-]{20,400}$/.test(key)) {
       return res.status(400).json({ error: 'La clave de TMDB no tiene un formato válido' });
     }
-    tmdbChanged = key !== (cfg.tmdbApiKey || '');
-    if (key) cfg.tmdbApiKey = key; else delete cfg.tmdbApiKey;
+    tmdbChanged = key !== metadata.getTmdbKey();
+    if (SECRET_STORE) {
+      // Cifrada en su propio archivo (main.js), nunca en config.json
+      if (tmdbChanged) {
+        if (!(await saveTmdbKey(key))) {
+          return res.status(500).json({ error: 'No se pudo guardar la clave de TMDB cifrada' });
+        }
+        metadata.setTmdbKey(key);
+      }
+      delete cfg.tmdbApiKey;
+    } else if (key) {
+      cfg.tmdbApiKey = key;
+    } else {
+      delete cfg.tmdbApiKey;
+    }
   }
 
   saveConfig(cfg);
+  const hasKey = !!metadata.getTmdbKey();
   // Clave de TMDB nueva: buscar otra vez lo que falte, ahora con la información en español
-  if (tmdbChanged && cfg.tmdbApiKey) metadata.startRefresh(DATA_FILE);
-  res.json({ success: true, settings: publicSettings(), refreshing: tmdbChanged && !!cfg.tmdbApiKey });
+  if (tmdbChanged && hasKey) metadata.startRefresh(DATA_FILE);
+  res.json({ success: true, settings: publicSettings(), refreshing: tmdbChanged && hasKey });
 });
+
+/* ---------- Clave de TMDB cifrada ----------
+   En la app de escritorio el servidor es un proceso hijo de main.js (process.send existe).
+   Entonces la clave no se guarda en config.json: main.js la cifra con Windows (safeStorage,
+   DPAPI: solo tu usuario de Windows en este PC puede leerla) en un archivo aparte y se la
+   manda al servidor al arrancar; aquí queda solo en memoria.
+   Con "node server.js" a mano (sin Electron) sigue en config.json, como antes. */
+const SECRET_STORE = typeof process.send === 'function';
+const secretSaves = new Map(); // id → resolve(ok)
+let secretSaveId = 0;
+
+// Pide a main.js que guarde (o borre, con '') la clave cifrada. Devuelve true si lo hizo.
+function saveTmdbKey(key) {
+  return new Promise((resolve) => {
+    const id = ++secretSaveId;
+    const timer = setTimeout(() => { secretSaves.delete(id); resolve(false); }, 10000);
+    secretSaves.set(id, (ok) => { clearTimeout(timer); resolve(ok); });
+    process.send({ type: 'tmdb-key-save', id, key });
+  });
+}
+
+if (SECRET_STORE) {
+  process.on('message', (msg) => {
+    if (!msg) return;
+    // Al arrancar: la clave guardada, ya descifrada
+    if (msg.type === 'tmdb-key' && !metadata.getTmdbKey()) metadata.setTmdbKey(msg.key);
+    if (msg.type === 'tmdb-key-saved' && secretSaves.has(msg.id)) {
+      secretSaves.get(msg.id)(!!msg.ok);
+      secretSaves.delete(msg.id);
+    }
+  });
+
+  // Clave de antes en config.json (texto plano): pasarla al archivo cifrado y quitarla de ahí.
+  // Si Windows no puede cifrar, se deja donde estaba para no perderla.
+  const legacyKey = String(readJSON(CONFIG_FILE, {}).tmdbApiKey || '').trim();
+  if (legacyKey) {
+    metadata.setTmdbKey(legacyKey);
+    saveTmdbKey(legacyKey).then((ok) => {
+      if (!ok) return console.warn('No se pudo cifrar la clave de TMDB: sigue en config.json');
+      const cfg = readJSON(CONFIG_FILE, {});
+      delete cfg.tmdbApiKey;
+      writeJSON(CONFIG_FILE, cfg);
+      console.log('Clave de TMDB movida a su archivo cifrado');
+    });
+  }
+}
 
 // Mi Lista (favoritos): [{ id, addedAt }], el más reciente primero
 // (de cada perfil)

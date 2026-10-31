@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, dialog, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, shell, safeStorage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { fork } = require('child_process');
@@ -59,10 +59,12 @@ function copyDir(src, dest) {
 // ──────────────────────────────────────────────
 function startServer() {
   return new Promise((resolve, reject) => {
+    const userDir = getUserDir();
     serverProcess = fork(path.join(__dirname, 'server.js'), [], {
-      env: { ...process.env, PORT: SERVER_PORT, HIY_USER_DIR: getUserDir() },
+      env: { ...process.env, PORT: SERVER_PORT, HIY_USER_DIR: userDir },
       silent: true
     });
+    connectTmdbKey(serverProcess, userDir);
 
     serverProcess.stdout.on('data', (data) => {
       const msg = data.toString();
@@ -82,6 +84,58 @@ function startServer() {
 
     // Fallback: en un arranque en frío (disco lento) el servidor puede tardar más
     setTimeout(resolve, 15000);
+  });
+}
+
+// ──────────────────────────────────────────────
+// 1b. Clave de TMDB cifrada
+// ──────────────────────────────────────────────
+// La clave no va en config.json: se cifra con Windows (safeStorage → DPAPI, ligada a tu
+// usuario de Windows en este PC) y se guarda en un archivo de nombre genérico dentro de data/.
+// Copiado a otro PC o usuario no se puede descifrar (se toma como "sin clave").
+// El servidor la recibe descifrada por el canal del proceso hijo y la tiene solo en memoria.
+const TMDB_KEY_FILE = 'sys.dat';
+
+function readTmdbKey(userDir) {
+  const file = path.join(userDir, 'data', TMDB_KEY_FILE);
+  try {
+    if (!fs.existsSync(file) || !safeStorage.isEncryptionAvailable()) return '';
+    return safeStorage.decryptString(fs.readFileSync(file));
+  } catch (err) {
+    console.warn('[TMDB] No se pudo descifrar la clave guardada:', err.message);
+    return '';
+  }
+}
+
+// key vacía: borra el archivo. Devuelve false si Windows no puede cifrar.
+function writeTmdbKey(userDir, key) {
+  const file = path.join(userDir, 'data', TMDB_KEY_FILE);
+  if (!key) {
+    fs.rmSync(file, { force: true });
+    return true;
+  }
+  if (!safeStorage.isEncryptionAvailable()) return false;
+  fs.writeFileSync(`${file}.tmp`, safeStorage.encryptString(key));
+  fs.renameSync(`${file}.tmp`, file);
+  return true;
+}
+
+function connectTmdbKey(proc, userDir) {
+  // safeStorage solo funciona con la app lista; el servidor arranca antes, en paralelo
+  proc.on('message', async (msg) => {
+    if (!msg || msg.type !== 'tmdb-key-save') return;
+    await app.whenReady();
+    let ok = false;
+    try {
+      ok = writeTmdbKey(userDir, String(msg.key || '').trim());
+    } catch (err) {
+      console.error('[TMDB] No se pudo guardar la clave cifrada:', err.message);
+    }
+    if (proc.connected) proc.send({ type: 'tmdb-key-saved', id: msg.id, ok });
+  });
+  app.whenReady().then(() => {
+    const key = readTmdbKey(userDir);
+    if (key && proc.connected) proc.send({ type: 'tmdb-key', key });
   });
 }
 

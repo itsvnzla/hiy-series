@@ -63,7 +63,7 @@ npm run build
 
 El instalador queda en `dist/`.
 
-> ⚠️ El instalador incluye la carpeta `data/` tal como esté en ese momento (ver `build.files` en `package.json`). Si ahí está tu `config.json` con la API key de TMDB o tu biblioteca personal, se incluirán en el instalador. Vacía o quita `data/` antes de compilar si vas a compartirlo.
+> ⚠️ El instalador incluye la carpeta `data/` tal como esté en ese momento (ver `build.files` en `package.json`). Ahí van tu biblioteca personal, tus perfiles y tu progreso (la API key de TMDB va cifrada en `sys.dat` y no se puede descifrar en otro PC). Vacía o quita `data/` antes de compilar si vas a compartirlo.
 
 ## Estructura del proyecto
 
@@ -88,6 +88,7 @@ El instalador queda en `dist/`.
 
 - **En desarrollo** (`npm start`): los datos se guardan en `data/` y `media/` dentro del proyecto.
 - **En la app instalada**: se guardan en `%APPDATA%\HIY Series`.
+- **API key de TMDB**: no se guarda en `config.json`. Se cifra con Windows (`safeStorage` de Electron, protegido con DPAPI) en `data/sys.dat`: solo tu usuario de Windows en ese PC puede descifrarla, y copiada a otro equipo no sirve. Si tenías la clave en `config.json` de una versión anterior, se mueve sola al abrir la app. (Ejecutando `node server.js` sin Electron se sigue leyendo de `config.json` o de `TMDB_API_KEY`.)
 
 Ninguna de estas carpetas se sube al repositorio (ver `.gitignore`).
 
