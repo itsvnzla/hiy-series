@@ -2,6 +2,8 @@
 
 Plataforma de streaming personal para tus series y películas **locales**, como app de escritorio para Windows (Electron + Express). Apuntas a una carpeta con tus videos y HIY Series arma un catálogo estilo streaming con pósteres, descripciones, perfiles y reproductor propio.
 
+![Interfaz principal de HIY Series](docs/interfaz-principal.png)
+
 ## Características
 
 - **Biblioteca local**: escanea carpetas con videos `.mp4`, `.mkv` y `.webm` y detecta temporadas y episodios. También avisa cuando aparecen videos nuevos.
