@@ -121,6 +121,8 @@ Electron · Node.js · Express · Transformers.js (ONNX Runtime) · HTML/CSS/JS 
 
 👉 **[Reportar un error](https://github.com/itsvnzla/hiy-series/issues/new?template=reportar-error.yml)**
 
+También desde la app: **menú del perfil → Reportar un error**, o **Configuración → Ayuda**.
+
 Se abrirá un formulario corto. Para que sea más fácil arreglarlo, incluye:
 
 - Qué pasó y los pasos para que vuelva a pasar.

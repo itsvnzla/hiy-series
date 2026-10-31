@@ -267,6 +267,15 @@ ipcMain.handle('open-folder-dialog', async () => {
   return null;
 });
 
+// Reportar un error: se abre en el navegador del sistema (no en una ventana de la app).
+// Solo páginas de este repositorio: la interfaz no puede abrir cualquier dirección.
+const GITHUB_REPO_URL = 'https://github.com/itsvnzla/hiy-series/';
+ipcMain.handle('open-github', async (_event, url) => {
+  if (typeof url !== 'string' || !url.startsWith(GITHUB_REPO_URL)) return false;
+  await shell.openExternal(url);
+  return true;
+});
+
 // ──────────────────────────────────────────────
 // 5. App Lifecycle
 // ──────────────────────────────────────────────

@@ -75,6 +75,9 @@
           <button type="button" class="profile-menu-item" role="menuitem" id="profileMenuMyList">
             <i data-lucide="heart"></i> Favoritos
           </button>
+          <button type="button" class="profile-menu-item" role="menuitem" data-settings-tab="help">
+            <i data-lucide="bug"></i> Reportar un error
+          </button>
         </div>
       </div>
     </div>
@@ -488,6 +491,7 @@
           <button type="button" class="settings-tab" role="tab" data-tab="playback"><i data-lucide="play"></i> Reproducción</button>
           <button type="button" class="settings-tab" role="tab" data-tab="library"><i data-lucide="library"></i> Biblioteca</button>
           <button type="button" class="settings-tab" role="tab" data-tab="data"><i data-lucide="database"></i> Datos</button>
+          <button type="button" class="settings-tab" role="tab" data-tab="help"><i data-lucide="life-buoy"></i> Ayuda</button>
         </nav>
 
         <form class="settings-body" id="settingsForm" novalidate>
@@ -616,6 +620,26 @@
               </span>
               <button type="button" class="btn-danger" id="settingsClearMyList" data-confirm="¿Seguro? Clic otra vez"><i data-lucide="trash-2"></i> Vaciar</button>
             </div>
+          </section>
+
+          <!-- Ayuda: los reportes van a GitHub (se abren en el navegador) -->
+          <section class="settings-panel" data-panel="help">
+            <h3>Ayuda</h3>
+            <div class="settings-row">
+              <span>
+                <strong>Reportar un error</strong>
+                <small>¿Algo no funciona? Se abrirá un formulario en GitHub, en tu navegador.</small>
+              </span>
+              <button type="button" class="btn-edit-cancel" id="settingsReportBug"><i data-lucide="bug"></i> Reportar</button>
+            </div>
+            <div class="settings-row">
+              <span>
+                <strong>Errores ya reportados</strong>
+                <small>Mira si alguien ya avisó del mismo problema.</small>
+              </span>
+              <button type="button" class="btn-edit-cancel" id="settingsOpenIssues"><i data-lucide="external-link"></i> Ver</button>
+            </div>
+            <small class="edit-hint">No incluyas tu clave de TMDB ni datos personales en el reporte.</small>
           </section>
 
           <div class="edit-actions settings-actions">

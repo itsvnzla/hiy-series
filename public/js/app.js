@@ -3810,6 +3810,23 @@ class NetflixApp {
       this.confirmAction(e.currentTarget, () => this.clearProgress()));
     $('settingsClearMyList').addEventListener('click', (e) =>
       this.confirmAction(e.currentTarget, () => this.clearMyList()));
+    // Ayuda
+    $('settingsReportBug').addEventListener('click', () =>
+      this.openGitHub('https://github.com/itsvnzla/hiy-series/issues/new?template=reportar-error.yml'));
+    $('settingsOpenIssues').addEventListener('click', () =>
+      this.openGitHub('https://github.com/itsvnzla/hiy-series/issues'));
+  }
+
+  // En el navegador del sistema (en Electron, a través de main.js); en un navegador, en otra pestaña
+  async openGitHub(url) {
+    try {
+      if (window.electronAPI && window.electronAPI.openGitHub) await window.electronAPI.openGitHub(url);
+      else window.open(url, '_blank', 'noopener');
+      this.showToast('Se abrió GitHub en tu navegador');
+    } catch (err) {
+      console.error('No se pudo abrir GitHub:', err);
+      this.showToast('No se pudo abrir el navegador', 'error');
+    }
   }
 
   toggleProfileMenu(force) {
@@ -3885,8 +3902,8 @@ class NetflixApp {
     this.settingsModal.querySelectorAll('.settings-panel').forEach(p => {
       p.hidden = p.dataset.panel !== tab;
     });
-    // "Datos" se aplica al momento: no hay nada que guardar
-    document.querySelector('.settings-actions').hidden = tab === 'data';
+    // "Datos" y "Ayuda" se aplican al momento: no hay nada que guardar
+    document.querySelector('.settings-actions').hidden = tab === 'data' || tab === 'help';
   }
 
   updateSettingsPreview() {
