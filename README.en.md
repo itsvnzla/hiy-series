@@ -57,52 +57,22 @@
 
 <br>
 
-## ✨ What it does
+## Features
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### 📂 Your library
-- **Scans your folders** with `.mp4`, `.mkv` and `.webm` videos
-- Detects **shows, seasons and episodes** on its own
-- **Searches your whole PC** for video folders
-- Tells you when **new episodes** show up
-- **Edit** title, description, poster or banner by hand
-
-</td>
-<td width="50%" valign="top">
-
-### 🎞️ Automatic info
-- **Description, genres, year, rating, poster and banner** from the folder name
-- Sources: **TMDB** (included), **AniList** and **TVMaze**
-- **Offline English → Spanish translation** with local AI models
-- Anime titles kept as they are
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### 🎬 Built-in player
-- **Thumbnails** when hovering the seek bar
-- **Fast seeking**, even on hard drives
-- **Subtitles** `.srt` / `.vtt` next to the video or loaded by hand
-- **Dolby / DTS** audio converted on the fly (with ffmpeg)
-- Automatic **next episode**, playback speed and keyboard shortcuts
-
-</td>
-<td width="50%" valign="top">
-
-### 👤 For the whole family
-- Up to **5 profiles** with photo, color and language
-- **Continue watching** and **Favorites** for each profile
-- **Default profile** to skip the profile picker
-- Playback preferences per profile
-
-</td>
-</tr>
-</table>
+- **Local library**: scans folders with `.mp4`, `.mkv` and `.webm` videos and detects seasons and episodes. It also tells you when new videos show up.
+- **Automatic metadata**: description, genres, year, rating, poster and banner from the folder name. Sources:
+  1. [TMDB](https://www.themoviedb.org/) (movies, shows and anime, in Spanish; requires a free API key)
+  2. [AniList](https://anilist.co/) (anime, no key)
+  3. [TVMaze](https://www.tvmaze.com/) (shows, no key)
+- **Local translation** of descriptions English → Spanish with Marian models (`opus-mt`) via Transformers.js + ONNX. Works offline, with no key and no limits.
+- **Profiles** with photo, color, language and playback preferences.
+- **Continue watching** and **My list** per profile.
+- **Built-in player**:
+  - Instant seeking using the keyframes from the MP4/MKV index.
+  - `.srt`/`.vtt` subtitles next to the video or loaded by hand (`.srt` files are converted to WebVTT).
+  - AC3, E-AC3, DTS and TrueHD audio converted to AAC in real time with ffmpeg.
+  - Autoplay of the next episode, speed and volume.
+- **Interface in Spanish and English**, with a welcome screen and tutorial.
 
 <br>
 

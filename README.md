@@ -55,52 +55,22 @@
 
 <br>
 
-## ✨ Lo que puede hacer
+## Características
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### 📂 Tu biblioteca
-- **Escanea tus carpetas** con videos `.mp4`, `.mkv` y `.webm`
-- Detecta **series, temporadas y episodios** solos
-- **Busca en todo el PC** carpetas con videos
-- Avisa cuando aparecen **episodios nuevos**
-- **Edita** título, descripción, póster o banner a mano
-
-</td>
-<td width="50%" valign="top">
-
-### 🎞️ Información automática
-- **Descripción, géneros, año, puntuación, póster y banner** a partir del nombre de la carpeta
-- Fuentes: **TMDB** (incluido), **AniList** y **TVMaze**
-- **Traducción al español sin internet**, con modelos de IA locales
-- Títulos de anime respetados tal cual
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### 🎬 Reproductor propio
-- **Miniaturas** al pasar el mouse por la barra
-- **Saltos rápidos**, incluso en discos mecánicos
-- **Subtítulos** `.srt` / `.vtt` junto al video o cargados a mano
-- Audio **Dolby / DTS** convertido al momento (con ffmpeg)
-- **Siguiente episodio** automático, velocidad y atajos de teclado
-
-</td>
-<td width="50%" valign="top">
-
-### 👤 Para toda la casa
-- Hasta **5 perfiles** con foto, color e idioma
-- **Continuar viendo** y **Favoritos** de cada perfil
-- **Perfil de inicio** para entrar sin preguntar
-- Preferencias de reproducción por perfil
-
-</td>
-</tr>
-</table>
+- **Biblioteca local**: escanea carpetas con videos `.mp4`, `.mkv` y `.webm` y detecta temporadas y episodios. También avisa cuando aparecen videos nuevos.
+- **Metadatos automáticos**: descripción, géneros, año, puntuación, póster y banner a partir del nombre de la carpeta. Fuentes:
+  1. [TMDB](https://www.themoviedb.org/) (películas, series y anime, en español; requiere API key gratuita)
+  2. [AniList](https://anilist.co/) (anime, sin clave)
+  3. [TVMaze](https://www.tvmaze.com/) (series, sin clave)
+- **Traducción local** de descripciones inglés → español con modelos Marian (`opus-mt`) vía Transformers.js + ONNX. Funciona sin internet, sin clave y sin límites.
+- **Perfiles** con foto, color, idioma y preferencias de reproducción.
+- **Continuar viendo** y **Mi lista** por perfil.
+- **Reproductor propio**:
+  - Saltos instantáneos usando los fotogramas clave del índice MP4/MKV.
+  - Subtítulos `.srt`/`.vtt` junto al video o cargados a mano (los `.srt` se convierten a WebVTT).
+  - Audio AC3, E-AC3, DTS y TrueHD convertido a AAC en tiempo real con ffmpeg.
+  - Reproducción automática del siguiente episodio, velocidad y volumen.
+- **Interfaz en español e inglés**, con pantalla de bienvenida y tutorial.
 
 <br>
 
