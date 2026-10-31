@@ -230,6 +230,7 @@
     'Vaciar Favoritos': 'Empty Favorites',
     'Quita todas las series de tu lista. Las series no se borran.': 'Removes every series from your list. The series are not deleted.',
     'Vaciar': 'Empty',
+    'Incluida con la app. Puedes poner tu propia clave': 'Included with the app. You can use your own key',
     // Ayuda
     'Ayuda': 'Help',
     'Reportar un error': 'Report a bug',

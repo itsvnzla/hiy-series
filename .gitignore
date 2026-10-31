@@ -6,6 +6,9 @@ dist/
 data/
 media/
 
+# Clave de TMDB cifrada que se incluye en el instalador (la genera npm run build)
+assets/data.bin
+
 # Modelos de traducción (≈220 MB): se descargan con "npm run models"
 models/
 

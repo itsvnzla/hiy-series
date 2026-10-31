@@ -651,7 +651,8 @@ function publicSettings() {
   const prof = activeProfile(cfg);
   const p = prof || cfg.profile || {};
   const pb = (prof ? prof.playback : cfg.playback) || {};
-  const key = metadata.getTmdbKey();
+  // La del usuario; si no hay, se usa la incluida en la app al compilar (no se muestra)
+  const key = metadata.getUserTmdbKey();
   return {
     profile: {
       id: prof ? prof.id : null,
@@ -671,6 +672,7 @@ function publicSettings() {
     tmdb: {
       hasKey: !!key,
       fromEnv: !!process.env.TMDB_API_KEY,
+      builtIn: !key && !!metadata.getTmdbKey(),
       hint: key ? `••••${key.slice(-4)}` : ''
     },
     colors: PROFILE_COLORS,
@@ -721,7 +723,7 @@ app.put('/api/settings', async (req, res) => {
     if (key && !/^[A-Za-z0-9._-]{20,400}$/.test(key)) {
       return res.status(400).json({ error: 'La clave de TMDB no tiene un formato válido' });
     }
-    tmdbChanged = key !== metadata.getTmdbKey();
+    tmdbChanged = key !== metadata.getUserTmdbKey();
     if (SECRET_STORE) {
       // Cifrada en su propio archivo (main.js), nunca en config.json
       if (tmdbChanged) {
@@ -769,7 +771,7 @@ if (SECRET_STORE) {
   process.on('message', (msg) => {
     if (!msg) return;
     // Al arrancar: la clave guardada, ya descifrada
-    if (msg.type === 'tmdb-key' && !metadata.getTmdbKey()) metadata.setTmdbKey(msg.key);
+    if (msg.type === 'tmdb-key' && !metadata.getUserTmdbKey()) metadata.setTmdbKey(msg.key);
     if (msg.type === 'tmdb-key-saved' && secretSaves.has(msg.id)) {
       secretSaves.get(msg.id)(!!msg.ok);
       secretSaves.delete(msg.id);

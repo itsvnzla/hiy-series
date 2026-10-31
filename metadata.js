@@ -14,6 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { readEmbeddedKey } = require('./embedded-key');
 
 // En la app instalada los datos van en la carpeta del usuario (ver main.js), no en app.asar
 const DATA_DIR = path.join(process.env.HIY_USER_DIR || __dirname, 'data');
@@ -120,7 +121,12 @@ function setTmdbKey(key) {
   tmdbKeyInMemory = String(key || '').trim();
 }
 
+// La que puso el usuario manda; si no hay, la incluida al compilar (ver embedded-key.js)
 function getTmdbKey() {
+  return getUserTmdbKey() || readEmbeddedKey();
+}
+
+function getUserTmdbKey() {
   if (process.env.TMDB_API_KEY) return process.env.TMDB_API_KEY.trim();
   if (tmdbKeyInMemory) return tmdbKeyInMemory;
   const cfg = readJSON(CONFIG_FILE, {});
@@ -1226,5 +1232,6 @@ module.exports = {
   getStatus,
   preserveMetadata,
   getTmdbKey,
+  getUserTmdbKey,
   setTmdbKey
 };

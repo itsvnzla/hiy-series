@@ -3877,7 +3877,8 @@ class NetflixApp {
     key.value = '';
     key.type = 'password';
     key.disabled = s.tmdb.fromEnv;
-    key.placeholder = s.tmdb.hasKey ? `Clave guardada (${s.tmdb.hint}). Escribe una nueva para cambiarla` : 'Pega aquí tu clave de API';
+    key.placeholder = s.tmdb.hasKey ? `Clave guardada (${s.tmdb.hint}). Escribe una nueva para cambiarla`
+      : s.tmdb.builtIn ? 'Incluida con la app. Puedes poner tu propia clave' : 'Pega aquí tu clave de API';
     $('settingsTmdbHint').textContent = s.tmdb.fromEnv
       ? 'La clave viene de la variable de entorno TMDB_API_KEY y no se puede cambiar desde aquí.'
       : 'Con ella la información (descripción, géneros, pósters) llega en español. Es gratuita en themoviedb.org. Déjala vacía para no cambiarla.';
