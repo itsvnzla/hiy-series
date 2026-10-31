@@ -51,7 +51,6 @@
       "keyframes.js",
       "embedded-key.js",
       "public/**/*",
-      "data/**/*",
       "assets/**/*",
       "models/**/*",
       "node_modules/**/*"

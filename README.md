@@ -65,7 +65,7 @@ El instalador queda en `dist/`.
 
 **Clave de TMDB incluida:** antes de compilar, `npm run build` toma tu clave (la variable de entorno `TMDB_API_KEY`, o la que guardaste en Configuración) y la mete cifrada en `assets/data.bin` (ver `embedded-key.js`). Así la app instalada trae TMDB funcionando en cualquier PC sin que nadie ponga su clave; si un usuario pone la suya en Configuración, se usa la suya. Ese archivo no se sube a GitHub. Es una ofuscación: impide leer la clave a simple vista, pero alguien decidido podría sacarla del instalador.
 
-> ⚠️ El instalador incluye la carpeta `data/` tal como esté en ese momento (ver `build.files` en `package.json`). Ahí van tu biblioteca personal, tus perfiles y tu progreso (la API key de TMDB va cifrada en `sys.dat` y no se puede descifrar en otro PC). Vacía o quita `data/` antes de compilar si vas a compartirlo.
+> El instalador **no** incluye tu carpeta `data/` (biblioteca, perfiles, progreso): quien lo instale empieza con la biblioteca vacía. Tus datos se quedan en tu PC.
 
 ## Estructura del proyecto
 
