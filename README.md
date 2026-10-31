@@ -4,6 +4,10 @@ Plataforma de streaming personal para tus series y películas **locales**, como 
 
 ![Interfaz principal de HIY Series](docs/interfaz-principal.png)
 
+| Más información | Reproductor |
+|---|---|
+| ![Ficha de la serie con temporadas y episodios](docs/mas-informacion.png) | ![Reproductor con miniatura en la barra de progreso](docs/reproductor.png) |
+
 ## Características
 
 - **Biblioteca local**: escanea carpetas con videos `.mp4`, `.mkv` y `.webm` y detecta temporadas y episodios. También avisa cuando aparecen videos nuevos.
