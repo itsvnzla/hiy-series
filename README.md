@@ -115,6 +115,21 @@ El servidor escucha en `http://localhost:3000`. Rutas principales:
 
 Electron · Node.js · Express · Transformers.js (ONNX Runtime) · HTML/CSS/JS sin frameworks · Lucide icons
 
+## Reportar un error
+
+¿Encontraste un error o algo no funciona bien? Repórtalo en GitHub:
+
+👉 **[Reportar un error](https://github.com/itsvnzla/hiy-series/issues/new?template=reportar-error.yml)**
+
+Se abrirá un formulario corto. Para que sea más fácil arreglarlo, incluye:
+
+- Qué pasó y los pasos para que vuelva a pasar.
+- Si usas el instalador o `npm start`, y tu versión de Windows.
+- Si el error es al reproducir, el formato del video (MP4, MKV, WEBM).
+- Capturas de pantalla o los errores de la consola (`Ctrl+Shift+I` → *Console*), si los hay.
+
+Antes de enviarlo, revisa en [Issues](https://github.com/itsvnzla/hiy-series/issues) que no exista ya un reporte igual. **No pegues tu clave de TMDB** ni datos personales.
+
 ## Licencia
 
 ISC

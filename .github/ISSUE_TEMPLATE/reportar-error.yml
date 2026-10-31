@@ -1,0 +1,65 @@
+name: 🐞 Reportar un error
+description: Algo no funciona como debería en HIY Series
+title: "[Error] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ¡Gracias por avisar! Cuanto más detalle des, más fácil será arreglarlo.
+        Antes de enviar, revisa que no exista ya un reporte igual en [Issues](https://github.com/itsvnzla/hiy-series/issues).
+  - type: textarea
+    id: que-paso
+    attributes:
+      label: ¿Qué pasó?
+      description: Describe el error.
+      placeholder: Al saltar en la barra del reproductor el video se queda congelado...
+    validations:
+      required: true
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducirlo
+      placeholder: |
+        1. Abrir una serie
+        2. Reproducir el episodio 1
+        3. Hacer clic en la mitad de la barra
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: ¿Qué esperabas que pasara?
+    validations:
+      required: true
+  - type: dropdown
+    id: como-usa
+    attributes:
+      label: ¿Cómo usas la app?
+      options:
+        - Instalador (.exe)
+        - Desde el código (npm start / start.bat)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versión de HIY Series
+      placeholder: "1.0.0"
+  - type: input
+    id: windows
+    attributes:
+      label: Versión de Windows
+      placeholder: Windows 10 / Windows 11
+  - type: input
+    id: video
+    attributes:
+      label: Formato del video (si el error es al reproducir)
+      placeholder: MP4, MKV, WEBM... (y el códec si lo sabes, p. ej. H.264, AV1, HEVC)
+  - type: textarea
+    id: capturas
+    attributes:
+      label: Capturas o registro de errores
+      description: |
+        Puedes arrastrar imágenes aquí. Si hay errores en la consola (Ctrl+Shift+I → pestaña Console), pégalos también.
+        No incluyas tu clave de TMDB ni datos personales.
