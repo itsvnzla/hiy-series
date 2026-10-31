@@ -3096,6 +3096,10 @@ class NetflixApp {
       this.maxProfiles = data.max;
       this.profileSuggested = data.suggested || {};
       this.profilesSupported = true;
+      // Primera vez (sin perfiles): la pantalla de crear perfil ya en el idioma elegido al instalar
+      if (!this.profiles.length && data.language && window.hiyI18n && data.language !== window.hiyI18n.lang) {
+        window.hiyI18n.setLang(data.language);
+      }
     } catch (err) {
       // Servidor de una versión anterior (sin perfiles): la app sigue con un solo perfil
       console.warn('No se pudieron cargar los perfiles:', err);

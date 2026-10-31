@@ -392,6 +392,15 @@ app.post('/api/thumbnails', (req, res) => {
    El perfil elegido queda en config.activeProfileId (la app es de una sola ventana). */
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const PROFILES_DIR = path.join(DATA_DIR, 'profiles');
+
+// Primera vez en la app instalada: el idioma elegido en el instalador (ver main.js)
+if (process.env.HIY_DEFAULT_LANG === 'es' || process.env.HIY_DEFAULT_LANG === 'en') {
+  const cfg = readJSON(CONFIG_FILE, {});
+  if (!cfg.language && !(cfg.profiles || []).length) {
+    cfg.language = process.env.HIY_DEFAULT_LANG;
+    writeJSON(CONFIG_FILE, cfg);
+  }
+}
 const PROFILE_COLORS = ['#E50914', '#2563EB', '#16A34A', '#9333EA', '#EA580C', '#DB2777', '#0891B2', '#CA8A04'];
 const PLAYBACK_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 const MAX_PROFILES = 5;
@@ -505,7 +514,9 @@ app.get('/api/profiles', (req, res) => {
     colors: PROFILE_COLORS,
     max: MAX_PROFILES,
     // Para proponer nombre y color en el primer perfil (configuración de antes de los perfiles)
-    suggested: { name: (cfg.profile && cfg.profile.name) || '', color: (cfg.profile && cfg.profile.color) || PROFILE_COLORS[0] }
+    suggested: { name: (cfg.profile && cfg.profile.name) || '', color: (cfg.profile && cfg.profile.color) || PROFILE_COLORS[0] },
+    // Idioma de la app sin perfiles todavía (p. ej. el elegido en el instalador)
+    language: cfg.language === 'en' || cfg.language === 'es' ? cfg.language : null
   });
 });
 

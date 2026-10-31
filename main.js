@@ -42,6 +42,17 @@ function getUserDir() {
   return userDir;
 }
 
+// Idioma elegido en el instalador (lo guarda build/installer.nsh): 'es' | 'en'. La app empieza
+// en ese idioma la primera vez; después manda el que se elija en Configuración.
+function installerLanguage() {
+  try {
+    const id = fs.readFileSync(path.join(process.resourcesPath, 'installer-language'), 'utf8').trim();
+    return id === '1033' ? 'en' : 'es';
+  } catch {
+    return '';
+  }
+}
+
 // Copia recursiva que también sabe leer desde app.asar
 function copyDir(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
@@ -61,7 +72,7 @@ function startServer() {
   return new Promise((resolve, reject) => {
     const userDir = getUserDir();
     serverProcess = fork(path.join(__dirname, 'server.js'), [], {
-      env: { ...process.env, PORT: SERVER_PORT, HIY_USER_DIR: userDir },
+      env: { ...process.env, PORT: SERVER_PORT, HIY_USER_DIR: userDir, HIY_DEFAULT_LANG: installerLanguage() },
       silent: true
     });
     connectTmdbKey(serverProcess, userDir);

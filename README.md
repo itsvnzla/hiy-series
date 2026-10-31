@@ -63,6 +63,8 @@ npm run build
 
 El instalador queda en `dist/`.
 
+**Instalador:** asistente en español o inglés. Permite elegir la carpeta de instalación, crea accesos directos y la app empieza en el idioma elegido. Al desinstalar pregunta si borrar también la biblioteca, los perfiles y la configuración (`%APPDATA%hiy-series`); en las actualizaciones no pregunta.
+
 **Clave de TMDB incluida:** antes de compilar, `npm run build` toma tu clave (la variable de entorno `TMDB_API_KEY`, o la que guardaste en Configuración) y la mete cifrada en `assets/data.bin` (ver `embedded-key.js`). Así la app instalada trae TMDB funcionando en cualquier PC sin que nadie ponga su clave; si un usuario pone la suya en Configuración, se usa la suya. Ese archivo no se sube a GitHub. Es una ofuscación: impide leer la clave a simple vista, pero alguien decidido podría sacarla del instalador.
 
 > El instalador **no** incluye tu carpeta `data/` (biblioteca, perfiles, progreso): quien lo instale empieza con la biblioteca vacía. Tus datos se quedan en tu PC.

@@ -61,6 +61,24 @@
       "node_modules/onnxruntime-common/**/*",
       "node_modules/sharp/**/*",
       "node_modules/@img/**/*"
-    ]
+    ],
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "HIY Series",
+      "runAfterFinish": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerLanguages": [
+        "es_ES",
+        "en_US"
+      ],
+      "multiLanguageInstaller": true,
+      "displayLanguageSelector": true,
+      "include": "build/installer.nsh"
+    }
   }
 }
