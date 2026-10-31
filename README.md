@@ -27,7 +27,7 @@
 
 ## 🎉 Ya disponible: HIY Series 1.0.0
 
-<img src="docs/release.svg" alt="HIY Series 1.0.0 ya disponible para Windows" width="100%">
+<img src="docs/release.svg?v=2" alt="HIY Series 1.0.0 ya disponible para Windows" width="100%">
 
 📂 Escanea tus carpetas · 🎞️ Pósteres y descripciones automáticos · 🌐 Traducción sin internet · 👤 Perfiles con foto · ⏯️ Continuar viendo · ❤️ Favoritos · 🎬 Reproductor con miniaturas, subtítulos y audio Dolby/DTS · 🐞 Reporta errores desde la app
 
