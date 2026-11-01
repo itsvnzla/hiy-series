@@ -27,8 +27,6 @@
 
 ## 🎉 Out now: HIY Series 1.0.0
 
-<img src="docs/release.en.svg?v=2" alt="HIY Series 1.0.0 out now for Windows" width="100%">
-
 📂 Scan your folders · 🎞️ Automatic posters and descriptions · 🌐 Offline translation · 👤 Profiles with photos · ⏯️ Continue watching · ❤️ Favorites · 🎬 Player with thumbnails, subtitles and Dolby/DTS audio · 🐞 Report bugs from the app
 
 </div>
