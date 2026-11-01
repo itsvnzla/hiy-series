@@ -22,3 +22,6 @@ graphify-out/
 *.log
 Thumbs.db
 desktop.ini
+
+# Salidas de /brag con fecha
+brag-output-*/

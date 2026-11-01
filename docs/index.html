@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HIY Series · Tu streaming personal</title>
+<meta name="description" content="HIY Series convierte la carpeta de tus videos en una plataforma de streaming: pósteres, descripciones, temporadas, perfiles y un reproductor propio. Gratis para Windows.">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="icon" type="image/png" href="icon.png">
+<meta property="og:title" content="HIY Series · Tu streaming personal">
+<meta property="og:description" content="Tus series y películas locales, como en una plataforma de streaming. Gratis para Windows 10 y 11.">
+<meta property="og:image" content="https://itsvnzla.github.io/hiy-series/banner.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="fonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face {
+  font-family: 'Outfit'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('fonts/outfit-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Outfit'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('fonts/outfit-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --bg: #0b0b0b;
+  --bg-raised: #141414;
+  --bg-card: #1a1a1a;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --text: #ffffff;
+  --text-2: #b3b3b3;
+  --text-3: #8c8c8c;
+  --red: #e50914;
+  --red-deep: #b3132f;
+  --orange: #ff4a12;
+  --green: #46d369;
+  --brand: linear-gradient(100deg, var(--red-deep) 0%, var(--red) 45%, var(--orange) 100%);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --wrap: 1180px;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+h1, h2, h3 { margin: 0; line-height: 1.05; letter-spacing: -0.02em; }
+p { margin: 0; }
+
+.wrap { width: min(var(--wrap), 100% - 32px); margin-inline: auto; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Barra superior ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(11, 11, 11, 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s;
+}
+.nav.scrolled { border-bottom-color: var(--line); }
+.nav .wrap { display: flex; align-items: center; gap: 16px; height: 64px; }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+.logo img { width: 32px; height: 32px; border-radius: 8px; }
+.logo b { background: var(--brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.nav-links { display: flex; gap: 24px; margin-left: 24px; }
+.nav-links a { text-decoration: none; color: var(--text-2); font-size: 15px; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-end { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.lang {
+  display: inline-flex; padding: 3px; border: 1px solid var(--line-strong); border-radius: 999px;
+}
+.lang button {
+  font: inherit; font-size: 13px; font-weight: 600; letter-spacing: 0.04em;
+  color: var(--text-3); background: none; border: 0; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+.lang button[aria-pressed="true"] { color: var(--text); background: rgba(255, 255, 255, 0.12); }
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  font: inherit; font-weight: 700; text-decoration: none; white-space: nowrap;
+  border-radius: 10px; border: 0; cursor: pointer;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.2s;
+}
+.btn svg { flex: none; }
+.btn-sm { font-size: 14px; padding: 9px 16px; background: var(--red); color: #fff; }
+.btn-sm:hover { background: #f6121d; }
+.btn-xl {
+  position: relative; font-size: 19px; padding: 18px 30px; color: #fff;
+  background: var(--brand);
+  box-shadow: 0 10px 40px -10px rgba(229, 9, 20, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.btn-xl:hover { transform: translateY(-2px); box-shadow: 0 18px 50px -12px rgba(255, 74, 18, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.btn-xl:active { transform: translateY(0); }
+.btn-ghost {
+  font-size: 16px; padding: 16px 22px; color: var(--text);
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line-strong);
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.11); }
+.btn:focus-visible, .lang button:focus-visible, a:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+
+/* ---------- Portada ---------- */
+.hero { position: relative; padding: 72px 0 0; isolation: isolate; }
+.hero::before {
+  content: ""; position: absolute; inset: -64px 0 auto; height: 900px; z-index: -1;
+  background:
+    radial-gradient(60% 55% at 78% 30%, rgba(229, 9, 20, 0.22), transparent 70%),
+    radial-gradient(40% 40% at 10% 10%, rgba(255, 74, 18, 0.10), transparent 70%);
+}
+.hero-grid { display: grid; grid-template-columns: 1fr; gap: 56px; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 600; color: var(--text-2);
+  padding: 6px 14px 6px 8px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line);
+  text-decoration: none;
+}
+.eyebrow .tag { font-size: 12px; font-weight: 700; color: #fff; background: var(--red); padding: 2px 8px; border-radius: 999px; }
+.hero h1 {
+  margin-top: 22px;
+  font-size: clamp(44px, 7.4vw, 96px); font-weight: 800; letter-spacing: -0.035em;
+}
+.hero h1 .grad { background: var(--brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lede { margin-top: 22px; max-width: 34ch; font-size: clamp(19px, 2vw, 23px); color: var(--text-2); line-height: 1.45; }
+.cta { margin-top: 34px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--text-3); }
+.meta span { display: inline-flex; align-items: center; gap: 6px; }
+.meta svg { color: var(--text-2); }
+
+.shot {
+  position: relative; border-radius: 14px; overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 40px 120px -30px rgba(229, 9, 20, 0.45), 0 30px 60px -20px rgba(0, 0, 0, 0.9);
+}
+.shot .bar { display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; background: #1c1c1c; border-bottom: 1px solid var(--line); }
+.shot .bar i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a3a; }
+.shot .bar span { margin-left: 10px; font-size: 12px; color: var(--text-3); }
+.hero-shot { perspective: 1800px; }
+.hero-shot .shot { transform: rotateX(8deg) scale(0.98); transform-origin: 50% 0; animation: rise 1.4s var(--ease) 0.15s both; }
+@keyframes rise { from { opacity: 0; transform: rotateX(22deg) translateY(60px) scale(0.94); } }
+.hero-shot::after {
+  content: ""; display: block; height: 120px; margin-top: -120px; position: relative;
+  background: linear-gradient(transparent, var(--bg));
+}
+
+/* ---------- Tira de película ---------- */
+.strip {
+  margin: 56px 0 0; padding: 14px 0; overflow: hidden;
+  background: #120607;
+  border-block: 1px solid rgba(229, 9, 20, 0.25);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.strip-track { display: flex; width: max-content; animation: slide 40s linear infinite; }
+.strip-track span {
+  display: inline-flex; align-items: center; gap: 14px; padding-right: 14px;
+  font-size: 15px; font-weight: 600; color: var(--text-2); white-space: nowrap;
+}
+.strip-track span::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+@keyframes slide { to { transform: translateX(-50%); } }
+
+/* ---------- Secciones ---------- */
+section { padding: 112px 0; }
+.kicker { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); }
+.h2 { margin-top: 14px; font-size: clamp(34px, 4.6vw, 56px); font-weight: 800; max-width: 18ch; }
+.sub { margin-top: 16px; max-width: 56ch; color: var(--text-2); font-size: 18px; }
+
+/* Demo interactiva: pestañas + video */
+.demo { margin-top: 48px; display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr); gap: 40px; align-items: start; }
+.demo-tabs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.demo-tab {
+  position: relative; width: 100%; display: flex; gap: 18px; align-items: flex-start; text-align: left;
+  padding: 18px 20px 20px; border-radius: 14px; border: 1px solid transparent; background: none;
+  font: inherit; color: var(--text-3); cursor: pointer; overflow: hidden;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+.demo-tab:hover { background: rgba(255, 255, 255, 0.03); color: var(--text-2); }
+.demo-tab[aria-selected="true"] { background: var(--bg-card); border-color: var(--line); color: var(--text-2); }
+.demo-tab:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.demo-num { flex: none; font-size: 14px; font-weight: 700; letter-spacing: 0.06em; padding-top: 4px; font-variant-numeric: tabular-nums; }
+.demo-tab[aria-selected="true"] .demo-num { color: var(--orange); }
+.demo-txt { display: grid; gap: 4px; }
+.demo-txt b { font-size: 20px; font-weight: 700; color: var(--text-2); letter-spacing: -0.01em; }
+.demo-tab[aria-selected="true"] .demo-txt b { color: var(--text); }
+.demo-txt span { font-size: 15px; line-height: 1.5; display: none; }
+.demo-tab[aria-selected="true"] .demo-txt span { display: block; }
+.demo-prog { position: absolute; left: 20px; right: 20px; bottom: 0; height: 2px; }
+.demo-tab[aria-selected="true"] .demo-prog { background: rgba(255, 255, 255, 0.08); }
+.demo-prog i { display: block; height: 100%; width: 100%; background: var(--brand); transform: scaleX(0); transform-origin: left center; }
+.demo-stage { position: sticky; top: 96px; }
+.demo-screen { position: relative; aspect-ratio: 16 / 9; background: #141414; cursor: pointer; }
+.demo-v { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s ease; }
+.demo-v.is-on { opacity: 1; }
+.demo-full { margin-top: 16px; font-size: 15px; padding: 12px 18px; }
+.demo-dur { color: var(--text-3); font-weight: 600; }
+
+.film {
+  width: min(1100px, 100vw - 32px); max-width: none; padding: 0; border: 1px solid var(--line-strong); border-radius: 14px;
+  background: #000; overflow: visible; box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8);
+}
+.film::backdrop { background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(6px); }
+.film video { display: block; width: 100%; height: auto; border-radius: 14px; }
+.film-close {
+  position: absolute; top: -52px; right: 0; width: 40px; height: 40px; display: grid; place-items: center;
+  border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.14); color: #fff; cursor: pointer;
+}
+.film-close:hover { background: rgba(255, 255, 255, 0.24); }
+
+/* La ventana de la demo entra girando, como la de la portada, al llegar a la sección */
+.demo-stage { perspective: 1800px; }
+.demo-stage .shot { opacity: 0; transform-origin: 0 50%; }
+.demo.in .demo-stage .shot { animation: swing-in 1.4s var(--ease) 0.1s both; }
+@keyframes swing-in {
+  from { opacity: 0; transform: rotateY(-30deg) rotateX(6deg) translateX(90px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+.demo.in .demo-tabs li { animation: tab-in 0.7s var(--ease) both; }
+.demo.in .demo-tabs li:nth-child(2) { animation-delay: 0.06s; }
+.demo.in .demo-tabs li:nth-child(3) { animation-delay: 0.12s; }
+.demo.in .demo-tabs li:nth-child(4) { animation-delay: 0.18s; }
+.demo.in .demo-tabs li:nth-child(5) { animation-delay: 0.24s; }
+.demo.in .demo-tabs li:nth-child(6) { animation-delay: 0.3s; }
+@keyframes tab-in { from { opacity: 0; transform: translateX(-24px); } }
+
+/* Galería */
+.gallery { margin-top: 56px; display: grid; gap: 20px; grid-template-columns: 1fr 1fr; }
+.gallery figure { margin: 0; }
+.gallery figcaption { margin-top: 14px; font-size: 15px; color: var(--text-3); }
+.gallery figcaption b { color: var(--text); font-weight: 600; }
+
+/* Instalación */
+.install { background: var(--bg-raised); border-block: 1px solid var(--line); }
+.steps { margin-top: 56px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; }
+.step { padding: 28px; border-radius: 18px; background: var(--bg); border: 1px solid var(--line); }
+.step::before {
+  counter-increment: s; content: counter(s);
+  display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
+  font-weight: 800; background: var(--brand); color: #fff;
+}
+.step h3 { margin-top: 18px; font-size: 21px; font-weight: 700; }
+.step p { margin-top: 8px; color: var(--text-2); font-size: 16px; }
+.note {
+  margin-top: 20px; display: flex; gap: 14px; align-items: flex-start;
+  padding: 18px 22px; border-radius: 14px;
+  background: rgba(255, 196, 0, 0.06); border: 1px solid rgba(255, 196, 0, 0.22);
+  color: var(--text-2); font-size: 15px;
+}
+.note svg { flex: none; margin-top: 2px; color: #ffc400; }
+.note b { color: var(--text); }
+.reqs { margin-top: 20px; font-size: 15px; color: var(--text-3); }
+.reqs a { color: var(--text-2); }
+
+/* Privacidad */
+.privacy { display: grid; grid-template-columns: 1fr 1.1fr; gap: 64px; align-items: center; }
+.plist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.plist li { display: flex; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); color: var(--text-2); }
+.plist li:last-child { border-bottom: 0; }
+.plist svg { flex: none; margin-top: 3px; color: var(--green); }
+.plist b { color: var(--text); font-weight: 600; }
+
+/* Llamada final */
+.final { text-align: center; padding: 140px 0; position: relative; isolation: isolate; overflow: hidden; }
+.final::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: radial-gradient(50% 60% at 50% 100%, rgba(229, 9, 20, 0.28), transparent 70%);
+}
+.final img.app { width: 96px; height: 96px; margin: 0 auto; border-radius: 22px; box-shadow: 0 20px 60px -10px rgba(229, 9, 20, 0.6); }
+.final .h2 { margin: 28px auto 0; }
+.final .sub { margin-inline: auto; }
+.final .cta { justify-content: center; }
+.final .meta { justify-content: center; }
+
+footer { border-top: 1px solid var(--line); padding: 32px 0 40px; font-size: 14px; color: var(--text-3); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+footer nav { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-left: auto; }
+footer a { color: var(--text-2); text-decoration: none; }
+footer a:hover { color: var(--text); }
+
+/* Aparecer al hacer scroll */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ---------- Pantallas ---------- */
+@media (min-width: 1000px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: center; gap: 40px; }
+  .hero h1 { font-size: clamp(56px, 5.6vw, 84px); }
+  .hero h1 .grad { white-space: nowrap; }
+  .hero { padding-top: 96px; }
+  .hero-shot .shot { transform: rotateY(-14deg) rotateX(4deg); transform-origin: 0 50%; }
+  @keyframes rise { from { opacity: 0; transform: rotateY(-30deg) rotateX(6deg) translateX(80px); } }
+  .hero-shot::after { display: none; }
+  .hero-shot { margin-right: -120px; }
+}
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .demo { grid-template-columns: 1fr; gap: 20px; }
+  .demo-stage { position: static; order: -1; }
+  .demo-stage .shot { transform-origin: 50% 0; }
+  @keyframes swing-in {
+    from { opacity: 0; transform: rotateX(22deg) translateY(60px) scale(0.94); }
+    to { opacity: 1; transform: none; }
+  }
+  .steps { grid-template-columns: 1fr; }
+  .privacy { grid-template-columns: 1fr; gap: 32px; }
+  section { padding: 84px 0; }
+}
+@media (max-width: 620px) {
+  body { font-size: 16px; }
+  .gallery { grid-template-columns: 1fr; }
+  .demo-tab { padding: 14px 14px 16px; }
+  .nav .btn-sm { display: none; }
+  .btn-xl { width: 100%; font-size: 18px; }
+  .cta .btn-ghost { width: 100%; }
+  .hero { padding-top: 48px; }
+  .step { padding: 22px; }
+  .final { padding: 96px 0; }
+  footer nav { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+  .demo-stage .shot { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-down" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></symbol>
+  <symbol id="i-win" viewBox="0 0 24 24"><path fill="currentColor" d="M3 5.5 10.5 4.4v7.1H3zm8.5-1.2L21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zm8.5 0H21V21l-9.5-1.3z"/></symbol>
+  <symbol id="i-gh" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+</svg>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="HIY Series">
+      <img src="icon.png" alt="" width="32" height="32">
+      <span><b>HIY</b> Series</span>
+    </a>
+    <nav class="nav-links" aria-label="Secciones">
+      <a href="#funciones" data-i18n="nav.features">Funciones</a>
+      <a href="#capturas" data-i18n="nav.shots">Capturas</a>
+      <a href="#instalar" data-i18n="nav.install">Instalar</a>
+    </nav>
+    <div class="nav-end">
+      <div class="lang" role="group" aria-label="Idioma / Language">
+        <button type="button" data-lang="es" aria-pressed="true">ES</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <a class="btn btn-sm js-download" href="https://github.com/itsvnzla/hiy-series/releases/download/v1.0.0/HIY.Series.Setup.1.0.0.exe">
+        <svg width="16" height="16"><use href="#i-down"/></svg><span data-i18n="nav.download">Descargar</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <a class="eyebrow js-release" href="https://github.com/itsvnzla/hiy-series/releases/latest">
+          <span class="tag" data-i18n="hero.new">Nuevo</span>
+          <span><span data-i18n="hero.version">Ya disponible la versión</span> <span class="js-version">1.0.0</span></span>
+        </a>
+        <h1><span data-i18n="hero.title1">Tus series,</span><br><span class="grad" data-i18n="hero.title2">tu streaming.</span></h1>
+        <p class="lede" data-i18n="hero.lede">Elige la carpeta con tus videos y HIY Series arma el catálogo con pósteres, descripciones y temporadas. Como una plataforma de streaming, pero en tu PC.</p>
+        <div class="cta">
+          <a class="btn btn-xl js-download" href="https://github.com/itsvnzla/hiy-series/releases/download/v1.0.0/HIY.Series.Setup.1.0.0.exe">
+            <svg width="22" height="22"><use href="#i-win"/></svg>
+            <span data-i18n="cta.download">Descargar para Windows</span>
+          </a>
+          <a class="btn btn-ghost" href="#funciones" data-i18n="cta.more">Ver cómo funciona</a>
+        </div>
+        <div class="meta">
+          <span><svg width="15" height="15"><use href="#i-check"/></svg><span data-i18n="meta.free">Gratis</span></span>
+          <span><svg width="15" height="15"><use href="#i-check"/></svg>Windows 10 · 11 (64 bits)</span>
+          <span><svg width="15" height="15"><use href="#i-check"/></svg><span class="js-size">355 MB</span></span>
+        </div>
+      </div>
+      <div class="hero-shot">
+        <div class="shot">
+          <div class="bar"><i></i><i></i><i></i><span>HIY Series</span></div>
+          <img src="interfaz-principal.jpg" width="1600" height="1000" alt="Pantalla principal de HIY Series con el banner destacado y la fila Continuar viendo" data-i18n-alt="alt.main" fetchpriority="high">
+        </div>
+      </div>
+    </div>
+
+    <div class="strip" aria-hidden="true">
+      <div class="strip-track">
+        <span data-i18n="strip.1">Escanea tus carpetas</span><span data-i18n="strip.2">Pósteres automáticos</span><span data-i18n="strip.3">Traducción sin internet</span><span data-i18n="strip.4">Perfiles con foto</span><span data-i18n="strip.5">Continuar viendo</span><span data-i18n="strip.6">Mi lista</span><span data-i18n="strip.7">Subtítulos</span><span data-i18n="strip.8">Audio Dolby y DTS</span>
+        <span data-i18n="strip.1">Escanea tus carpetas</span><span data-i18n="strip.2">Pósteres automáticos</span><span data-i18n="strip.3">Traducción sin internet</span><span data-i18n="strip.4">Perfiles con foto</span><span data-i18n="strip.5">Continuar viendo</span><span data-i18n="strip.6">Mi lista</span><span data-i18n="strip.7">Subtítulos</span><span data-i18n="strip.8">Audio Dolby y DTS</span>
+      </div>
+    </div>
+  </div>
+
+  <section id="funciones">
+    <div class="wrap">
+      <p class="kicker reveal" data-i18n="feat.kicker">Cómo funciona</p>
+      <h2 class="h2 reveal" data-i18n="feat.title">Mírala hacer lo suyo.</h2>
+      <p class="sub reveal" data-i18n="feat.sub">Toca una función para verla en acción.</p>
+
+      <div class="demo reveal">
+        <ol class="demo-tabs" role="tablist" aria-label="Funciones">
+          <li>
+            <button type="button" class="demo-tab" role="tab" id="tab-escanear" aria-controls="demo-panel" aria-selected="true" data-video="videos/escanear.mp4" data-poster="videos/escanear.jpg">
+              <span class="demo-num">01</span>
+              <span class="demo-txt"><b data-i18n="d1.t">Escanea tu carpeta</b><span data-i18n="d1.d">Elige dónde guardas tus videos y la biblioteca se arma sola, con temporadas y episodios.</span></span>
+              <span class="demo-prog" aria-hidden="true"><i></i></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="demo-tab" role="tab" id="tab-metadatos" aria-controls="demo-panel" aria-selected="false" data-video="videos/metadatos.mp4" data-poster="videos/metadatos.jpg">
+              <span class="demo-num">02</span>
+              <span class="demo-txt"><b data-i18n="d2.t">Pósteres y sinopsis automáticos</b><span data-i18n="d2.d">Del nombre del archivo a póster, géneros, año y puntuación, desde TMDB, AniList y TVMaze.</span></span>
+              <span class="demo-prog" aria-hidden="true"><i></i></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="demo-tab" role="tab" id="tab-banner" aria-controls="demo-panel" aria-selected="false" data-video="videos/banner.mp4" data-poster="videos/banner.jpg">
+              <span class="demo-num">03</span>
+              <span class="demo-txt"><b data-i18n="d6.t">Banner y descripción</b><span data-i18n="d6.d">Con internet se descargan solos la primera vez y quedan guardados. ¿Sin conexión? Los pones tú a mano en «Editar información».</span></span>
+              <span class="demo-prog" aria-hidden="true"><i></i></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="demo-tab" role="tab" id="tab-traduccion" aria-controls="demo-panel" aria-selected="false" data-video="videos/traduccion.mp4" data-poster="videos/traduccion.jpg">
+              <span class="demo-num">04</span>
+              <span class="demo-txt"><b data-i18n="d3.t">Traduce sin internet</b><span data-i18n="d3.d">Las sinopsis en inglés pasan al español con modelos que corren en tu PC.</span></span>
+              <span class="demo-prog" aria-hidden="true"><i></i></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="demo-tab" role="tab" id="tab-perfiles" aria-controls="demo-panel" aria-selected="false" data-video="videos/perfiles.mp4" data-poster="videos/perfiles.jpg">
+              <span class="demo-num">05</span>
+              <span class="demo-txt"><b data-i18n="d4.t">Un perfil para cada uno</b><span data-i18n="d4.d">Cada persona con su foto, su «Continuar viendo» y su lista.</span></span>
+              <span class="demo-prog" aria-hidden="true"><i></i></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="demo-tab" role="tab" id="tab-reproductor" aria-controls="demo-panel" aria-selected="false" data-video="videos/reproductor.mp4" data-poster="videos/reproductor.jpg">
+              <span class="demo-num">06</span>
+              <span class="demo-txt"><b data-i18n="d5.t">Reproductor propio</b><span data-i18n="d5.d">Miniaturas al buscar, subtítulos, audio Dolby/DTS y siguiente episodio automático.</span></span>
+              <span class="demo-prog" aria-hidden="true"><i></i></span>
+            </button>
+          </li>
+        </ol>
+        <div class="demo-stage" id="demo-panel" role="tabpanel">
+          <div class="shot">
+            <div class="bar"><i></i><i></i><i></i><span>HIY Series</span></div>
+            <div class="demo-screen" id="demo-screen">
+            <video class="demo-v is-on" data-name="escanear" src="videos/escanear.mp4" poster="videos/escanear.jpg" muted playsinline preload="auto" width="1280" height="720"></video>
+            <video class="demo-v" data-name="metadatos" src="videos/metadatos.mp4" muted playsinline preload="auto" width="1280" height="720"></video>
+            <video class="demo-v" data-name="banner" src="videos/banner.mp4" muted playsinline preload="auto" width="1280" height="720"></video>
+            <video class="demo-v" data-name="traduccion" src="videos/traduccion.mp4" muted playsinline preload="auto" width="1280" height="720"></video>
+            <video class="demo-v" data-name="perfiles" src="videos/perfiles.mp4" muted playsinline preload="auto" width="1280" height="720"></video>
+            <video class="demo-v" data-name="reproductor" src="videos/reproductor.mp4" muted playsinline preload="auto" width="1280" height="720"></video>
+            </div>
+          </div>
+          <button type="button" class="btn btn-ghost demo-full" id="open-film">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+            <span data-i18n="demo.full">Ver el video completo con sonido</span> <span class="demo-dur">0:25</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="film" id="film" aria-label="Video de HIY Series">
+    <button type="button" class="film-close" id="film-close" aria-label="Cerrar">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <video id="film-video" src="videos/hiy-series.mp4" poster="videos/hiy-series.jpg" controls playsinline preload="none" width="1280" height="720"></video>
+  </dialog>
+
+  <section id="capturas" style="padding-top: 0">
+    <div class="wrap">
+      <p class="kicker reveal" data-i18n="shots.kicker">Así se ve</p>
+      <h2 class="h2 reveal" data-i18n="shots.title">Pensada para verse bien en la tele del salón y en el portátil.</h2>
+      <div class="gallery">
+        <figure class="reveal">
+          <div class="shot"><img src="mas-informacion.jpg" width="1600" height="1000" loading="lazy" alt="Ficha de una serie con temporadas y episodios" data-i18n-alt="alt.info"></div>
+          <figcaption><b data-i18n="shots.info">Más información</b> · <span data-i18n="shots.info.d">temporadas, episodios y lo que te queda por ver</span></figcaption>
+        </figure>
+        <figure class="reveal">
+          <div class="shot"><img src="reproductor.jpg" width="1600" height="1000" loading="lazy" alt="Reproductor con miniaturas en la barra de progreso" data-i18n-alt="alt.player"></div>
+          <figcaption><b data-i18n="shots.player">Reproductor</b> · <span data-i18n="shots.player.d">miniaturas en la barra para encontrar la escena</span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="instalar" class="install">
+    <div class="wrap">
+      <p class="kicker reveal" data-i18n="inst.kicker">Instalar</p>
+      <h2 class="h2 reveal" data-i18n="inst.title">Listo en tres pasos.</h2>
+      <div class="steps">
+        <div class="step reveal">
+          <h3 data-i18n="s1.t">Descarga el instalador</h3>
+          <p><span data-i18n="s1.d">Es un único archivo:</span> <code class="js-file">HIY.Series.Setup.1.0.0.exe</code></p>
+        </div>
+        <div class="step reveal">
+          <h3 data-i18n="s2.t">Elige idioma y carpeta</h3>
+          <p data-i18n="s2.d">El asistente te pregunta el idioma y dónde instalarla, y crea el acceso directo en el escritorio.</p>
+        </div>
+        <div class="step reveal">
+          <h3 data-i18n="s3.t">Crea tu perfil y escanea</h3>
+          <p data-i18n="s3.d">Abre la app, crea tu perfil y pulsa «Escanear PC» para elegir la carpeta de tus series.</p>
+        </div>
+      </div>
+      <div class="note reveal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4m0 3v.01"/></svg>
+        <p data-i18n="inst.note">Windows SmartScreen puede avisar de que la app no es conocida, porque el instalador todavía no está firmado. Pulsa <b>Más información → Ejecutar de todas formas</b>.</p>
+      </div>
+      <p class="reqs reveal"><span data-i18n="inst.reqs">Requisitos: Windows 10 u 11 de 64 bits. Opcional:</span> <a href="https://ffmpeg.org/" target="_blank" rel="noopener">ffmpeg</a> <span data-i18n="inst.reqs2">para el audio Dolby/DTS.</span></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap privacy">
+      <div>
+        <p class="kicker reveal" data-i18n="priv.kicker">Privacidad</p>
+        <h2 class="h2 reveal" data-i18n="priv.title">Tus videos no salen de tu PC.</h2>
+        <p class="sub reveal" data-i18n="priv.sub">Sin cuentas, sin nube y sin anuncios. HIY Series solo se conecta para buscar pósteres y descripciones.</p>
+      </div>
+      <ul class="plist reveal">
+        <li><svg width="20" height="20"><use href="#i-check"/></svg><span data-i18n="p1"><b>Todo pasa en tu equipo.</b> Tus videos no se suben a ningún sitio.</span></li>
+        <li><svg width="20" height="20"><use href="#i-check"/></svg><span data-i18n="p2"><b>Servidor solo local.</b> El servidor interno solo escucha en tu propio PC.</span></li>
+        <li><svg width="20" height="20"><use href="#i-check"/></svg><span data-i18n="p3"><b>Traducción sin internet,</b> con modelos que se ejecutan en local.</span></li>
+        <li><svg width="20" height="20"><use href="#i-check"/></svg><span data-i18n="p4"><b>Clave cifrada.</b> Si usas tu clave de TMDB, se guarda cifrada con Windows.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <img class="app reveal" src="icon.png" width="96" height="96" alt="">
+      <h2 class="h2 reveal" data-i18n="final.title">Tu sofá ya tiene su plataforma.</h2>
+      <p class="sub reveal" data-i18n="final.sub">Descarga HIY Series gratis y convierte tu carpeta de videos en tu propio streaming.</p>
+      <div class="cta reveal">
+        <a class="btn btn-xl js-download" href="https://github.com/itsvnzla/hiy-series/releases/download/v1.0.0/HIY.Series.Setup.1.0.0.exe">
+          <svg width="22" height="22"><use href="#i-win"/></svg>
+          <span data-i18n="cta.download">Descargar para Windows</span>
+        </a>
+      </div>
+      <div class="meta reveal">
+        <span><span data-i18n="final.version">Versión</span> <span class="js-version">1.0.0</span></span>
+        <span class="js-size">355 MB</span>
+        <span>Windows 10 · 11</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="HIY Series"><img src="icon.png" alt="" width="28" height="28"><span><b>HIY</b> Series</span></a>
+    <nav aria-label="Enlaces">
+      <a href="https://github.com/itsvnzla/hiy-series"><span data-i18n="foot.code">Código en GitHub</span></a>
+      <a href="https://github.com/itsvnzla/hiy-series/releases" data-i18n="foot.versions">Versiones</a>
+      <a href="https://github.com/itsvnzla/hiy-series/issues/new?template=reportar-error.yml" data-i18n="foot.bug">Reportar un error</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var REPO = 'itsvnzla/hiy-series';
+
+  var en = {
+    'nav.features': 'Features', 'nav.shots': 'Screenshots', 'nav.install': 'Install', 'nav.download': 'Download',
+    'hero.new': 'New', 'hero.version': 'Now available: version',
+    'hero.title1': 'Your shows,', 'hero.title2': 'your streaming.',
+    'hero.lede': 'Pick the folder with your videos and HIY Series builds the catalog with posters, descriptions and seasons. Like a streaming platform, but on your PC.',
+    'cta.download': 'Download for Windows', 'cta.more': 'See how it works', 'meta.free': 'Free',
+    'strip.1': 'Scans your folders', 'strip.2': 'Automatic posters', 'strip.3': 'Offline translation', 'strip.4': 'Profiles with photos',
+    'strip.5': 'Continue watching', 'strip.6': 'My list', 'strip.7': 'Subtitles', 'strip.8': 'Dolby & DTS audio',
+    'feat.kicker': 'How it works', 'feat.title': 'Watch it do its thing.', 'feat.sub': 'Tap a feature to see it in action.',
+    'd1.t': 'Scan your folder', 'd1.d': 'Pick where you keep your videos and the library builds itself, with seasons and episodes.',
+    'd2.t': 'Automatic posters and synopses', 'd2.d': 'From a file name to poster, genres, year and rating, from TMDB, AniList and TVMaze.',
+    'd3.t': 'Translates offline', 'd3.d': 'English synopses are translated with models that run on your PC.',
+    'd4.t': 'A profile for everyone', 'd4.d': 'Each person gets their own photo, “Continue watching” and list.',
+    'd5.t': 'A player of its own', 'd5.d': 'Thumbnails while seeking, subtitles, Dolby/DTS audio and auto-play next episode.',
+    'd6.t': 'Banner and description', 'd6.d': 'Online, they download by themselves the first time and stay saved. No connection? Add them by hand in “Edit info”.',
+    'demo.full': 'Watch the full video with sound',
+    'shots.kicker': 'Take a look', 'shots.title': 'Built to look good on the living-room TV and on your laptop.',
+    'shots.info': 'More info', 'shots.info.d': 'seasons, episodes and what you have left to watch',
+    'shots.player': 'Player', 'shots.player.d': 'thumbnails on the bar to find the scene',
+    'inst.kicker': 'Install', 'inst.title': 'Ready in three steps.',
+    's1.t': 'Download the installer', 's1.d': 'It’s a single file:',
+    's2.t': 'Pick language and folder', 's2.d': 'The wizard asks for your language and where to install, and adds a desktop shortcut.',
+    's3.t': 'Create your profile and scan', 's3.d': 'Open the app, create your profile and click “Scan PC” to choose your shows folder.',
+    'inst.note': 'Windows SmartScreen may warn that the app is unrecognized, because the installer isn’t signed yet. Click <b>More info → Run anyway</b>.',
+    'inst.reqs': 'Requirements: Windows 10 or 11, 64-bit. Optional:', 'inst.reqs2': 'for Dolby/DTS audio.',
+    'priv.kicker': 'Privacy', 'priv.title': 'Your videos never leave your PC.',
+    'priv.sub': 'No accounts, no cloud, no ads. HIY Series only goes online to look up posters and descriptions.',
+    'p1': '<b>Everything happens on your machine.</b> Your videos aren’t uploaded anywhere.',
+    'p2': '<b>Local-only server.</b> The internal server only listens on your own PC.',
+    'p3': '<b>Offline translation,</b> with models that run locally.',
+    'p4': '<b>Encrypted key.</b> If you use your own TMDB key, it’s stored encrypted by Windows.',
+    'final.title': 'Your couch just got its own platform.',
+    'final.sub': 'Download HIY Series for free and turn your video folder into your own streaming service.',
+    'final.version': 'Version',
+    'foot.code': 'Source on GitHub', 'foot.versions': 'Releases', 'foot.bug': 'Report a bug',
+    'alt.main': 'HIY Series home screen with the featured banner and the Continue watching row',
+    'alt.info': 'A show’s page with seasons and episodes', 'alt.player': 'Player with thumbnails on the progress bar'
+  };
+
+  // Guarda el texto original (español) para poder volver a él
+  var es = {};
+  document.querySelectorAll('[data-i18n]').forEach(function (el) { es[el.dataset.i18n] = el.innerHTML; });
+  document.querySelectorAll('[data-i18n-alt]').forEach(function (el) { es[el.dataset.i18nAlt] = el.alt; });
+
+  function setLang(lang) {
+    var dict = lang === 'en' ? en : es;
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var v = dict[el.dataset.i18n]; if (v != null) el.innerHTML = v;
+    });
+    document.querySelectorAll('[data-i18n-alt]').forEach(function (el) {
+      var v = dict[el.dataset.i18nAlt]; if (v != null) el.alt = v;
+    });
+    document.querySelectorAll('.lang button').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+    });
+    try { localStorage.setItem('hiy-lang', lang); } catch (e) {}
+    document.dispatchEvent(new CustomEvent('hiy-lang', { detail: lang }));
+  }
+
+  document.querySelectorAll('.lang button').forEach(function (b) {
+    b.addEventListener('click', function () { setLang(b.dataset.lang); });
+  });
+
+  var saved = null;
+  try { saved = localStorage.getItem('hiy-lang'); } catch (e) {}
+  var initial = saved || ((navigator.language || 'es').toLowerCase().indexOf('es') === 0 ? 'es' : 'en');
+  if (initial !== 'es') setLang(initial);
+
+  // Barra con borde al hacer scroll
+  var nav = document.getElementById('nav');
+  addEventListener('scroll', function () { nav.classList.toggle('scrolled', scrollY > 8); }, { passive: true });
+
+  // Aparecer al entrar en pantalla
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+  }
+
+
+  // ---------- Demo: cada pestaña reproduce su clip; al terminar pasa a la siguiente ----------
+  // Los cinco clips están apilados y precargados: cambiar es un fundido, sin recargar nada.
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.demo-tab'));
+  var vids = Array.prototype.slice.call(document.querySelectorAll('.demo-v'));
+  var screen = document.getElementById('demo-screen');
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var current = 0, visible = false, userPaused = false;
+
+  function bar(i) { return tabs[i].querySelector('.demo-prog i'); }
+  function tryPlay(v) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+
+  function select(i, play) {
+    var prev = vids[current];
+    tabs.forEach(function (t, k) {
+      t.setAttribute('aria-selected', String(k === i));
+      t.tabIndex = k === i ? 0 : -1;
+      if (k !== i) bar(k).style.transform = 'scaleX(0)';
+    });
+    var next = vids[i];
+    current = i;
+    try { next.currentTime = 0; } catch (e) {}
+    vids.forEach(function (v) { v.classList.toggle('is-on', v === next); });
+    if (prev !== next) setTimeout(function () { if (vids[current] !== prev) prev.pause(); }, 350);
+    if (play) tryPlay(next);
+  }
+
+  // Videos en el idioma de la página (videos/ en español, videos/en/ en inglés)
+  var filmV = document.getElementById('film-video');
+  function videoLang(lang) {
+    var dir = lang === 'en' ? 'videos/en/' : 'videos/';
+    vids.forEach(function (v) {
+      var src = dir + v.dataset.name + '.mp4';
+      if (v.getAttribute('src') !== src) { v.setAttribute('src', src); v.load(); }
+    });
+    vids[0].poster = dir + 'escanear.jpg';
+    filmV.setAttribute('src', dir + 'hiy-series.mp4');
+    filmV.poster = dir + 'hiy-series.jpg';
+  }
+  if (document.documentElement.lang === 'en') videoLang('en');
+  document.addEventListener('hiy-lang', function (e) {
+    videoLang(e.detail);
+    select(current, visible && !userPaused && !reduce);
+  });
+
+  // Barra de progreso fluida (timeupdate solo llega unas 4 veces por segundo)
+  (function tick() {
+    var v = vids[current];
+    if (v.duration) bar(current).style.transform = 'scaleX(' + Math.min(1, v.currentTime / v.duration) + ')';
+    requestAnimationFrame(tick);
+  })();
+
+  vids.forEach(function (v, i) {
+    v.addEventListener('ended', function () {
+      if (i !== current) return;
+      if (reduce) return;
+      select((current + 1) % tabs.length, visible && !userPaused);
+    });
+  });
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { userPaused = false; select(i, true); });
+    t.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      var n = (i + d + tabs.length) % tabs.length;
+      tabs[n].focus(); select(n, true);
+    });
+  });
+  // Clic en el video: pausa o sigue
+  screen.addEventListener('click', function () {
+    var v = vids[current];
+    if (v.paused) { userPaused = false; tryPlay(v); } else { userPaused = true; v.pause(); }
+  });
+  // Solo se reproduce cuando se ve en pantalla
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      visible = entries[0].isIntersecting;
+      if (visible && !reduce && !userPaused) tryPlay(vids[current]); else if (!visible) vids[current].pause();
+    }, { threshold: 0.4 }).observe(screen);
+  }
+
+  // ---------- Video completo con sonido ----------
+  var film = document.getElementById('film');
+  var filmVideo = document.getElementById('film-video');
+  document.getElementById('open-film').addEventListener('click', function () {
+    vids[current].pause();
+    if (film.showModal) film.showModal(); else film.setAttribute('open', '');
+    filmVideo.currentTime = 0;
+    var p = filmVideo.play(); if (p && p.catch) p.catch(function () {});
+  });
+  function closeFilm() { filmVideo.pause(); if (film.close) film.close(); else film.removeAttribute('open'); }
+  document.getElementById('film-close').addEventListener('click', closeFilm);
+  film.addEventListener('click', function (e) { if (e.target === film) closeFilm(); });
+  film.addEventListener('close', function () { filmVideo.pause(); if (visible && !userPaused && !reduce) tryPlay(vids[current]); });
+
+  // Enlace siempre a la última versión publicada (si GitHub responde; si no, queda la 1.0.0)
+  fetch('https://api.github.com/repos/' + REPO + '/releases/latest')
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+    .then(function (rel) {
+      var exe = (rel.assets || []).filter(function (a) { return /\.exe$/i.test(a.name); })[0];
+      if (!exe) return;
+      var version = String(rel.tag_name || '').replace(/^v/, '');
+      document.querySelectorAll('.js-download').forEach(function (a) { a.href = exe.browser_download_url; });
+      document.querySelectorAll('.js-file').forEach(function (el) { el.textContent = exe.name; });
+      if (version) document.querySelectorAll('.js-version').forEach(function (el) { el.textContent = version; });
+      var mb = Math.round(exe.size / 1048576);
+      document.querySelectorAll('.js-size').forEach(function (el) { el.textContent = mb + ' MB'; });
+    })
+    .catch(function () {});
+})();
+</script>
+</body>
+</html>
